@@ -1,7 +1,11 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -16,16 +20,41 @@ class JCafePayment extends JDialog implements ActionListener{
 	JPanel pnlCash,pnlCard;
 	DefaultTableModel model;
 	int useStempCnt,userStemp,coffeeCnt;
+	// 사용한 스템프 갯수/ 유저 스템프 갯수/스탬프 추가될 커피 수
 	String userPhoneNum;
 	boolean payment;
 	boolean payToCash;
 	JCafeMain jc;
+	Color color = new Color(0xcbe2a8);
+//	Color colorGreen = new Color(0x003E00);
 	
 	void init(){// 컴포넌트 추가& 이벤트 추가
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\아이콘.png").getImage());
 		pnlCard=new JPanel(null);
 		pnlCash=new JPanel(null);
 		tfInstallment=new JTextField(3);
+		tfInstallment.addKeyListener(new KeyAdapter() {
+			@Override public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				char c = e.getKeyChar();
+				if (!Character.isDigit(c)) {
+					e.consume();
+					return;
+				}
+			}
+		});
 		tfCardNumber=new JTextField(10);
+		tfCardNumber.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				char c = e.getKeyChar();
+				if (!Character.isDigit(c)) {
+					e.consume();
+					return;
+				}
+			}
+		});
 		btnCard1=new JButton("카드");
 		btnCash1=new JButton("현금");
 		btnCard2=new JButton("카드");
@@ -121,13 +150,21 @@ class JCafePayment extends JDialog implements ActionListener{
 		pnlSouth.add(btnPayment);
 		pnlSouth.add(btnGoBack);
 		btnCard1.setBackground(Color.WHITE);
-		btnCash1.setBackground(Color.PINK);
+		btnCash1.setBackground(color);
 		btnStemp1.setBackground(Color.WHITE);
 		btnStemp2.setBackground(Color.WHITE);
 		btnProofOfExpenditure.setBackground(Color.WHITE);
 		btnReceipts.setBackground(Color.WHITE);
 		btnCashreceipts.setBackground(Color.WHITE);
 		btnStempAccumulate1.setBackground(Color.white);
+		
+//		getContentPane().setBackground(colorGreen);
+		btnPayment.setBackground(color);
+		btnPayment.setPreferredSize(new Dimension(88,28));
+		btnGoBack.setBackground(Color.white);
+		pnlCard.setBackground(null);
+		pnlCash.setBackground(null);
+		pnlSouth.setBackground(null);
 		
 		btnProofOfExpenditure.setEnabled(false);
 		btnReceipts.setEnabled(false);
@@ -143,17 +180,18 @@ class JCafePayment extends JDialog implements ActionListener{
 		JCafeUseStamp jus=new JCafeUseStamp(this);
 		if(jus.save){//스템프사용 완료되면 실행될 조건문
 			model=jus.model;
-			useStempCnt=jus.useStemp*5;	//사용한 스템프 갯수
+			useStempCnt=jus.useStemp+jus.useStemp*5;	//실제 사용한 스템프 갯수+사용하여 구매한 커피만큼 스템프 누적이 안됨
 			userStemp=jus.stempNum;		//남은 스템프 갯수
 			userPhoneNum=jus.userNumber;//사용자 전화번호
-			coffeeCnt=jus.coffeeCnt;	//커피 수
+			btnStempAccumulate1.setBackground(color);
+			btnStempAccumulate2.setBackground(color);
 		}
 	}
 	void clickCash(){// 현금버튼 클릭 이벤트
 		btnCard1.setBackground(Color.white);
-		btnCash1.setBackground(Color.pink);
+		btnCash1.setBackground(color);
 		btnCard2.setBackground(Color.white);
-		btnCash2.setBackground(Color.pink);
+		btnCash2.setBackground(color);
 		btnStempAccumulate1.setBackground(Color.white);
 		btnStempAccumulate2.setBackground(Color.white);
 		this.remove(pnlCard);
@@ -162,8 +200,8 @@ class JCafePayment extends JDialog implements ActionListener{
 		revalidate();
 	}
 	void clickCard(){// 카드버튼 클릭 이벤트
-		btnCard1.setBackground(Color.pink);
-		btnCard2.setBackground(Color.pink);
+		btnCard1.setBackground(color);
+		btnCard2.setBackground(color);
 		
 		btnStemp1.setBackground(Color.white);
 		btnStempAccumulate1.setBackground(Color.white);
@@ -183,20 +221,23 @@ class JCafePayment extends JDialog implements ActionListener{
 	void clickPayment(){// 결제버튼 클릭 이벤트
 		JCafePhoneNum jcpn;
 		payment=true; // 결제 했는지 안했는지 저장
-		if(btnCash1.getBackground()==Color.pink)payToCash=true;//현금결재
-		else if(btnCard1.getBackground()==Color.pink)payToCash=false;//카드결재
+		if(btnCash1.getBackground()==color)payToCash=true;//현금결재
+		else if(btnCard1.getBackground()==color)payToCash=false;//카드결재
 			
-		if(btnStempAccumulate1.getBackground()==Color.pink||btnStempAccumulate2.getBackground()==Color.pink) {//스탬프적립?
+		if(btnStempAccumulate1.getBackground()==color||btnStempAccumulate2.getBackground()==color) {//스탬프적립?
 			jcpn=new JCafePhoneNum(this);
-			if(jcpn.confirm) {//결제 했으면
+			if(jcpn.confirm) {//결제가 ture면
+				userPhoneNum=jcpn.getPhoneNum();
 				JCafeSaveSalesData.saveSalesData(model);//판매자료누적
 				new JCafeDaySaleData(jc, this);// JCafeDaySaleData폴더에 파일명(당일날짜)로 데이터 저장하는 클래스
-				userPhoneNum=jcpn.getPhoneNum();
+				JCafeStempAdd jcsa=new JCafeStempAdd(jcpn.getPhoneNum(), (coffeeCnt - (useStempCnt) ) ); // 사먹은커피- (스탬프로 결제한 커피는 적립X)
+				userStemp=jcsa.userStemp;
 				new JCafeReceipt(this,payToCash);
 			}
-		}else if(btnCashreceipts.getBackground()==Color.PINK) {//현금영수증?
+		}else if(btnCashreceipts.getBackground()==color) {//현금영수증?
 			jcpn=new JCafePhoneNum(this);
 			if(jcpn.confirm) {//결제 했으면
+				userPhoneNum=jcpn.getPhoneNum();
 				JCafeSaveSalesData.saveSalesData(model);//판매자료누적
 				new JCafeDaySaleData(jc, this);// JCafeDaySaleData폴더에 파일명(당일날짜)로 데이터 저장하는 클래스
 				new JCafeReceipt(this,payToCash);
@@ -207,25 +248,20 @@ class JCafePayment extends JDialog implements ActionListener{
 			new JCafeReceipt(this,payToCash);
 		}
 		
-		if(userPhoneNum!=null) {//스탬프적립 했으면 데이터화 시켜주는 조건문
-			new JCafeUseStempToSave(userPhoneNum,userStemp);//스탬프 갯수 데이터화(파일에 저장)
-			new JCafeStempAdd(userPhoneNum, (coffeeCnt - (useStempCnt/5) ) ); // 스템프 추가 (스탬프로 결제한 커피 수 만큼 스탬프 쌓이지않음)
-		}
-		
 	}
 	void clickGoBack(){// 이전화면버튼 클릭 이벤트
 		dispose();
 		payment=false;
 	}
 	void clickProofOfExpenditure(){// 현금영수증 사업자버튼 클릭 이벤트
-		btnProofOfExpenditure.setBackground(Color.pink);
+		btnProofOfExpenditure.setBackground(color);
 		btnReceipts.setBackground(Color.WHITE);
 		repaint();
 		revalidate();
 	}
 	void clickReceipts(){// 현금영수증 개인버튼 클릭 이벤트
 		btnProofOfExpenditure.setBackground(Color.WHITE);
-		btnReceipts.setBackground(Color.pink);
+		btnReceipts.setBackground(color);
 		repaint();
 		revalidate();
 	}
@@ -233,9 +269,9 @@ class JCafePayment extends JDialog implements ActionListener{
 		if(btnCashreceipts.getBackground()==Color.WHITE) {
 			btnProofOfExpenditure.setEnabled(true);
 			btnReceipts.setEnabled(true);
-			btnCashreceipts.setBackground(Color.PINK);
+			btnCashreceipts.setBackground(color);
 		}
-		else if(btnCashreceipts.getBackground()==Color.PINK) {
+		else if(btnCashreceipts.getBackground()==color) {
 			btnCashreceipts.setBackground(Color.WHITE);
 			btnReceipts.setBackground(Color.WHITE);
 			btnProofOfExpenditure.setBackground(Color.WHITE);
@@ -245,9 +281,9 @@ class JCafePayment extends JDialog implements ActionListener{
 	}
 	void clickBtnStempAccumulate() {//스탬프적립 버튼 클릭 이벤트
 		if(btnStempAccumulate1.getBackground()==Color.WHITE||btnStempAccumulate2.getBackground()==Color.WHITE) {
-			btnStempAccumulate1.setBackground(Color.pink);
-			btnStempAccumulate2.setBackground(Color.pink);
-		}else if(btnStempAccumulate1.getBackground()==Color.pink||btnStempAccumulate2.getBackground()==Color.pink) {
+			btnStempAccumulate1.setBackground(color);
+			btnStempAccumulate2.setBackground(color);
+		}else if(btnStempAccumulate1.getBackground()==color||btnStempAccumulate2.getBackground()==color) {
 			btnStempAccumulate1.setBackground(Color.WHITE);
 			btnStempAccumulate2.setBackground(Color.WHITE);
 		}

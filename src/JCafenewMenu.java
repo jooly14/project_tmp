@@ -1,9 +1,26 @@
-import java.awt.*;
-import java.awt.event.*;
-import java.io.*;
+import java.awt.Color;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 
-import javax.swing.*;
-import javax.swing.table.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 public class JCafenewMenu extends JDialog implements ActionListener{
 	JTable table;
@@ -20,15 +37,15 @@ public class JCafenewMenu extends JDialog implements ActionListener{
 	FileReader fr=null;
 	PrintWriter pw=null;//save
 	FileWriter fw = null;
-	String fstr="files/coffee.txt";
+	String fstr="JCafeData/InitData/InitMenuData/coffee";
 	
 	int row;//마우스로 클릭한 위치
 	
 	JComboBox comboMenu;
 	
 	JCafenewMenu(JCafeManagerMenu c, JCafeNewMenuPnl np){
-		super(c);
-		
+		super(c,true);
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		this.setSize(500,550);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		JLabel title=new JLabel("메뉴관리");
@@ -51,6 +68,12 @@ public class JCafenewMenu extends JDialog implements ActionListener{
 		JScrollPane sp=new JScrollPane(table);
 		panel.add(sp);
 		
+		DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();//table 가운데정렬
+		dtcr.setHorizontalAlignment(SwingConstants.CENTER);
+		TableColumnModel tcm = table.getColumnModel();
+		for(int i = 0 ; i < tcm.getColumnCount() ; i++){
+		      	tcm.getColumn(i).setCellRenderer(dtcr);  
+		}
 		//메뉴 금액 입력, 추가 삭제 하는 부분
 		JLabel name=new JLabel("메뉴:");
 		tname=new JTextField(5);
@@ -74,13 +97,23 @@ public class JCafenewMenu extends JDialog implements ActionListener{
 		panel2.add(newMenu);
 		panel2.add(delMenu);
 		
+		Color color=new Color(0x252525);	//panel 바탕색 변경
+		titlep.setBackground(color);
+		panel.setBackground(color);
+		panel2.setBackground(color);
+		//색상변경
+		title.setForeground(Color.WHITE);
+		name.setForeground(Color.WHITE);
+		pay.setForeground(Color.WHITE);
+		cont.setForeground(Color.WHITE);
+		newMenu.setBackground(Color.WHITE);
+		delMenu.setBackground(Color.WHITE);
+		comboMenu.setBackground(Color.WHITE);
 		
-		titlep.setBackground(Color.PINK);
-		panel.setBackground(Color.pink);
-		panel2.setBackground(Color.WHITE);
 		this.add(panel);
 		this.add(titlep,"North");
 		this.add(panel2,"South");
+		this.setLocationRelativeTo(null);
 		fileOpen();  //창 열릴때 자동으로 파일 불러오게
 		this.setVisible(true);
 	}
@@ -99,24 +132,23 @@ public class JCafenewMenu extends JDialog implements ActionListener{
 		}
 		else if(e.getSource()==delMenu){  //클릭한 행 지우기
 			row = table.getSelectedRow();
-			System.out.println(row);
 			model.removeRow(row);
 			minusidx++;
 		}
 		fileSave();
 		if(combo=="coffee"){
 			fileClose();
-			fstr="files/coffee.txt";
+			fstr="JCafeData/InitData/InitMenuData/coffee";
 			fileOpen();
 		}	
 		else if(combo=="latte"){
 			fileClose();
-			fstr="files/latte.txt";
+			fstr="JCafeData/InitData/InitMenuData/latte";
 			fileOpen();
 		}
 		else if(combo=="tea"){
 			fileClose();
-			fstr="files/tea.txt";
+			fstr="JCafeData/InitData/InitMenuData/tea";
 			fileOpen();
 		}
 		repaint();

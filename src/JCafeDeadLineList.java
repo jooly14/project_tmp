@@ -1,8 +1,9 @@
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
@@ -13,8 +14,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -22,11 +23,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
-public class JCafeDeadLineList extends JFrame implements ActionListener, PropertyChangeListener {
+public class JCafeDeadLineList extends JPanel implements ActionListener, PropertyChangeListener{
 	//테스트용 코드
-	public static void main(String[] args) {
+	/*public static void main(String[] args) {
 		new JCafeDeadLineList();
-	}
+	}*/
 	
 	JTable table;
 	DefaultTableModel model;
@@ -37,13 +38,12 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 	int firstChk;	//propertychangelistner이벤트에서 사용하려고 생성
 	String[][] content; // 모델에 add시킬 배열 //필요한 모든 데이터를 가지고 있을 예정
 	JCafeGetStockData gst = new JCafeGetStockData();	//테이블에 추가할 데이터 가져오기 위해서 클래스 생성
-	
-	public JCafeDeadLineList() {
-		this.setSize(600, 800);
-		this.setLocationRelativeTo(null);
-		this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	DeadLineRegistration deadLineRegistration;
+	public JCafeDeadLineList(DeadLineRegistration deadLineRegistration) {
+		//this.setLocationRelativeTo(null);
+		//this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		
-		
+		this.deadLineRegistration = deadLineRegistration;
 		table = new JTable();
 		// 수량만 수정 가능하게 만들었음
 		table.setModel(new DefaultTableModel(new Object[][] {},header){	
@@ -70,6 +70,19 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 		}
 		//실 재고량 입력 할때마다 오버로스가 수정되게끔 이벤트를 달았다.
 		table.addPropertyChangeListener(this);
+		table.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				// TODO Auto-generated method stub
+				char c = e.getKeyChar();
+				if (!Character.isDigit(c)) {
+					e.consume();
+					return;
+				}
+			}
+			
+			
+		});
 		
 		//테이블 내용을 가운데 정렬
 		DefaultTableCellRenderer celAlignCenter = new DefaultTableCellRenderer();
@@ -89,13 +102,13 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 		
 		//화면 꺼질때 다시 DeadLineRegistration을 띄우기 위해서 
 				//마감 파일이 있으면 버튼색을 바꾸려다보니..
-				this.addWindowListener(new WindowAdapter() {
+				/*this.addWindowListener(new WindowAdapter() {
 					@Override
 					public void windowClosing(WindowEvent e) {
 						// TODO Auto-generated method stub
 						new DeadLineRegistration();
 					}
-				});
+				});*/
 		
 		
 
@@ -106,25 +119,34 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 
 		pnlBtn = new JPanel();
 		pnlBtn.add(btnSet);
+		pnlBtn.add(new JLabel("       "));
 		pnlBtn.add(btnReset);
 		
 		
 		
 		
 		
+		//ui구현
+		btnReset.setBackground(new Color(0x252525));
+		btnReset.setPreferredSize(new Dimension(120,30));
+		btnReset.setForeground(Color.white);
+		btnSet.setBackground(new Color(0x252525));
+		btnSet.setPreferredSize(new Dimension(120,30));
+		btnSet.setForeground(Color.white);
 		
 		
-		this.getContentPane().setBackground(new Color(0x003E00));
+		//this.getContentPane().setBackground(new Color(0x003E00));
 		pnlBtn.setBackground(null);
 		//sp.setBorder(BorderFactory.createEmptyBorder());
-		table.setRowSorter(new TableRowSorter(model));	//정렬 기능 넣었지만 쓸일은 없겠죠..
+		table.setRowSorter(new TableRowSorter(model));	//정렬 기능
 		table.setShowHorizontalLines(false);
 		table.setRowHeight(30);
-		table.getTableHeader().setBackground(Color.WHITE);
+		//table.getTableHeader().setBackground(new Color(0x003E00));
 		
-		
-		sp.setBounds(10,100,570,600);
-		pnlBtn.setBounds(10,710,570,300);
+		this.setSize(600, 700);
+		sp.setBounds(0,100,555,500);
+		pnlBtn.setBounds(0,610,555,300);
+		this.setBackground(Color.WHITE);
 		this.setLayout(null);
 		this.add(sp);
 		this.add(pnlBtn);
@@ -135,10 +157,17 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
 		if (arg0.getSource() == btnSet) {// 완료
-			saveFile();	//완료 누르면 발주 등록에 사용할 파일을 저장
-			saveChangeInventoryFile();	//실제 인벤토리에 실재고량을 반영시킨다.
-			new DeadLineRegistration();	
-			dispose();
+			int okCancelChk =JOptionPane.showConfirmDialog(this, "<html>금일 재고 등록을 완료하시겠습니까? <br>재고등록이 완료된 이후에는 수정하실 수 없습니다.</html>", "", JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE, null);
+			if(okCancelChk==JOptionPane.OK_OPTION){
+				saveFile();	//완료 누르면 발주 등록에 사용할 파일을 저장
+				saveChangeInventoryFile();	//실제 인벤토리에 실재고량을 반영시킨다.
+				deadLineRegistration.remove(this);
+				deadLineRegistration.setSize(600,210);
+				deadLineRegistration.btnColorChangeFileExist();	//재고 등록이 완료되면 버튼 색이 변경됨
+				//new DeadLineRegistration();	
+				//dispose();
+			}
+			
 		} else if (arg0.getSource() == btnReset) {// 작성한 실 재고량을 초기화시킴
 			for(int i=0;i<table.getRowCount();i++){
 				table.setValueAt("", i, 1);	//실재고량 빈칸으로 만들고
@@ -160,12 +189,12 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 		FileWriter fw = null;
 		PrintWriter pw = null;
 		//해당 폴더가 없으면 폴더를 만듦
-		File dir = new File("JCafeData/SaleData/DealineData/");
+		File dir = new File("JCafeData/SaleData/DeadlineData/");
 		if(!dir.isDirectory()){
 			dir.mkdirs();
 		}
 		try {
-			fw = new FileWriter("JCafeData/SaleData/DealineData/"+dt);
+			fw = new FileWriter("JCafeData/SaleData/DeadlineData/"+dt);
 			pw = new PrintWriter(fw);
 			for(int i=0;i<table.getRowCount();i++){
 				content[i][1] = (String)table.getValueAt(i, 1);
@@ -221,12 +250,19 @@ public class JCafeDeadLineList extends JFrame implements ActionListener, Propert
 			String currentInventory = (String) (table.getValueAt(table.getSelectedRow(), 1));
 			int intCurrentInventory = 0;	//실재고량
 			int standardInventory = 0;		//표준재고량
-			if (!(currentInventory.equals(""))) {
-				intCurrentInventory = Integer.parseInt(currentInventory);
-				standardInventory = Integer.parseInt((String) (table.getValueAt(table.getSelectedRow(), 4)));
-				// 실재고량 - 표준재고량 = over/loss
-				table.setValueAt((intCurrentInventory - standardInventory)+"", table.getSelectedRow(), 5);
-			}
+				try {
+					if (!(currentInventory.equals(""))) {
+					intCurrentInventory = Integer.parseInt(currentInventory);
+					standardInventory = Integer.parseInt((String) (table.getValueAt(table.getSelectedRow(), 4)));
+					// 실재고량 - 표준재고량 = over/loss
+					table.setValueAt((intCurrentInventory - standardInventory)+"", table.getSelectedRow(), 5);
+					}
+				} catch (NumberFormatException e) {
+					JOptionPane.showMessageDialog(this, "숫자만 입력하세요");
+					table.setValueAt("", table.getSelectedRow(), 1);
+					table.setValueAt("0", table.getSelectedRow(), 5);
+				} finally {
+				}
 		}
 		//propertychangelistner를 붙여놓으니까
 		//처음 생성될때도 해당 이벤트가 실행되는 문제가 있음

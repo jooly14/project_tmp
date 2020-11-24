@@ -1,4 +1,3 @@
-import java.awt.GridLayout;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -8,10 +7,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import javax.swing.JDialog;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
 //JCafeDeadLineList에서 사용할 데이터를 가져오는 기능을 가진 클래스
 public class JCafeGetStockData extends JFrame {
 	//useTotal inventoryArray 두 배열 배열인덱스를 같이 써도 됨. 길이랑 배열순서가 같음
@@ -94,7 +90,7 @@ public class JCafeGetStockData extends JFrame {
 	}
 	//판매된 음료 총 량 대비 사용된 재료양 계산하는 메서드
 	void getUsingMaterialTotal(String fileName1, String fileName2){
-		String drinkIdx = ""; // 몇번째 열에 있는 커피가 팔렸는지 확인
+		String drinkNameStr = ""; // 팔린 음료 이름 확인
 		String drinkQuantity = "";	//판매된 음료 개수
 		
 		FileReader fr = null;
@@ -103,16 +99,15 @@ public class JCafeGetStockData extends JFrame {
 			fr = new FileReader(fileName1);
 			br = new BufferedReader(fr);
 			String readData = null;
-			int idx = 0;
 			while ((readData = br.readLine()) != null) {
 				String[] splitdata = readData.split("/");
 				// 결제내역에 포함된 메뉴의 인덱스만 가져오기
 				//파일에  몇 줄로 저장되어 있는 지 알 수 없으니 한 줄로 받아오고 split을 이용해서 배열에 담을 예정
 				if (!(splitdata[2].equals("0"))) { // 1개이상 판매된 메뉴만 가져옴
-					drinkIdx = drinkIdx + idx + "/"; // 몇번째 열에 있는 메뉴인지 가져옴
+					drinkNameStr = drinkNameStr + splitdata[0] + "/"; // 몇번째 열에 있는 메뉴인지 가져옴
 					drinkQuantity = drinkQuantity + splitdata[2] + "/"; // 팔린 개수를 가져옴
 				}
-				idx++;
+				
 			}
 
 		} catch (FileNotFoundException e) {
@@ -129,7 +124,7 @@ public class JCafeGetStockData extends JFrame {
 		}
 		//한줄에 받아온 데이터를 split으로 배열에 넣음
 		String[] drinkQuantityArray = drinkQuantity.split("/");
-		String[] drinkIdxArray = drinkIdx.split("/");	
+		String[] drinkNameArray = drinkNameStr.split("/");	
 		//음료 판매량을 담고 있는 String배열을 int배열로 변환
 		int[] drinkQuantityArrayInt = new int[drinkQuantityArray.length];
 		if(!(drinkQuantityArray[0].equals(""))){
@@ -138,23 +133,24 @@ public class JCafeGetStockData extends JFrame {
 			}
 		}
 		
-		//drinkIdxArray를 이용해서  재료 사용량을 가져온다.
-		if(!(drinkIdxArray[0].equals(""))){
+		//음료명을 이용해서  재료 사용량을 가져온다.
+		if(!(drinkNameArray[0].equals(""))){
 			try {
 				fr = new FileReader(fileName2);
 				br = new BufferedReader(fr);
 				String readData = null;
-				int idx = 0;
-				for (int i = 0; i < drinkIdxArray.length; i++) {
+				for (int i = 0; i < drinkNameArray.length; i++) {
 					while ((readData = br.readLine()) != null) {	
-						if (idx == Integer.parseInt(drinkIdxArray[i])) {	//음료 재료 소비량을 줄 단위로 읽어오며 판매된 음료만 재료 사용량을 저장한다.
+						//System.out.println(drinkNameArray[i]);
+						String[] useMaterial = readData.split("/"); 
+						if (useMaterial[0].equals(drinkNameArray[i])) {	//음료 재료 소비량을 줄 단위로 읽어오며 판매된 음료만 재료 사용량을 저장한다.
 							// useMaterial은 메뉴 당 사용되는 재료들의 목록 //음료명/재료명/사용량/재료명/사용량/...
 							//메뉴 당 사용되는 재료들은 원두만 사용하는 거도 있고 원두랑 우유를 소비하는 거도 있고 해서 저장된 길이가 일정하지 않음
 							//그래서 useMaterial 길이 만큼 반복문을 돌리면서 inventory에 저장된 재료명 순서대로
 							//사용된 양을 useTotal에 누적시킴
-							String[] useMaterial = readData.split("/"); 
 							for (int k = 0; k < inventoryArray[0].length; k++) {
 								for (int j = 1; j < useMaterial.length; j += 2) {
+									//System.out.print(drinkNameArray[i]);
 									// 재고를 각각 몇개 사용했는지 누적
 									//인벤토리 순서대로 재료 소비량을 useTotal에 누적
 									if (useMaterial[j].equals(inventoryArray[0][k])) {	
@@ -163,10 +159,8 @@ public class JCafeGetStockData extends JFrame {
 									}
 								}
 							}
-							idx++;
 							break;
 						}
-						idx++;
 					}
 				}
 			} catch (FileNotFoundException e) {

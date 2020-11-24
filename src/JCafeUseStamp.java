@@ -1,15 +1,25 @@
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
-import java.io.PrintWriter;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 public class JCafeUseStamp extends JDialog implements ActionListener{
 	boolean save;
@@ -33,6 +43,7 @@ public class JCafeUseStamp extends JDialog implements ActionListener{
 	String changeStemp;
 	public JCafeUseStamp(JCafePayment jcp) {// 처음 UI, 전역변수처리
 		super(jcp,true);
+		
 		model=jcp.jc.model;
 		init();
 		
@@ -42,7 +53,8 @@ public class JCafeUseStamp extends JDialog implements ActionListener{
 		pnl.add(tfPhoneNum);
 		pnl.add(btnEnter);
 		pnl.add(btnCancel);
-		
+		getContentPane().setBackground(new Color(0x252525));
+		setLocation(800, 455);
 		this.add(pnl);
 		this.setLocale(null);
 		this.pack();
@@ -50,6 +62,13 @@ public class JCafeUseStamp extends JDialog implements ActionListener{
 	}
 	void init(){// 컴포넌트 추가& 이벤트 추가 등등 자료 초기화
 		table=new JTable(model);
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
+		DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();
+		dtcr.setHorizontalAlignment(SwingConstants.CENTER);
+		TableColumnModel tcm = table.getColumnModel();
+		for(int i = 0 ; i < tcm.getColumnCount() ; i++)
+		      	tcm.getColumn(i).setCellRenderer(dtcr);
+		//가운데정렬
 		for(int i=0;i<table.getRowCount();i++)
 			coffeeCnt+=Integer.parseInt((String) table.getValueAt(i, 1));
 		btnCancel=new JButton("취소");
@@ -83,15 +102,25 @@ public class JCafeUseStamp extends JDialog implements ActionListener{
 	void stempEnter(){ // 초기화면에서 번호 입력 후 확인 누르면 나타나는 화면
 		this.remove(pnl);
 		setSize(500,550);
+		setLocation(700, 255);
 		JScrollPane sp=new JScrollPane(table);
+		sp.getViewport().setBackground(Color.WHITE);
 		pnl=new JPanel(null);
+		pnl.setBackground(new Color(0x252525));
 		lblStemp=new JLabel(tfPhoneNum.getText()+"님 가능한 스템프 : " + stempNum +" 개");
-		
-		sp.setBounds(10, 10, 460, 450);
+		lblStemp.setForeground(Color.WHITE);
+		JLabel lblNorth=new JLabel("※스템프 5개 적립시 음료 1잔 무료");
+		lblNorth.setForeground(Color.WHITE);
+		lblNorth.setBounds(150,10,250,20);
+		sp.setBounds(10, 30, 460, 430);
 		btnUse.setBounds(100,465,80,30);
 		btnComplete.setBounds(190,465,80,30);
 		btnCancel.setBounds(280,465,80,30);
+		btnUse.setBackground(Color.WHITE);
+		btnComplete.setBackground(Color.WHITE);
+		btnCancel.setBackground(Color.WHITE);
 		
+		pnl.add(lblNorth);
 		pnl.add(sp);
 		pnl.add(btnUse);
 		pnl.add(btnComplete);

@@ -8,6 +8,8 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 
+import javax.swing.JOptionPane;
+
 public class JCafeIpGo {
 	static boolean chk;	//정적 변수라서 메인이 실행된 이후 초기화되지 않는다.
 	public static void ipgo(){
@@ -19,9 +21,18 @@ public class JCafeIpGo {
 			String dt = transFormat.format(cal.getTime());
 			File dir = new File("JCafeData/OrderRegistration/"+dt);
 			if (dir.exists()) {
-				ipgoing(dir);	//전날 발주파일이 존재하는 경우에만 입고를 진행한다.
+				int chkYesNo = JOptionPane.showConfirmDialog(null,"<html>" +dt+ " 파일의 발주목록을 입고처리하시겠습니까?<br>"
+						+ "아니오를 선택하시면 입고여부를 다시 묻지 않습니다.<br>"
+						+ "나중에 입고를 하고 싶으시면 취소를 눌리세요.</html>", "", JOptionPane.YES_NO_CANCEL_OPTION);
+				if(chkYesNo==JOptionPane.OK_OPTION){
+					ipgoing(dir);	//전날 발주파일이 존재하는 경우에만 입고를 진행한다.
+					chk = true;	//입고가 진행되고 나서는 체크 변수가 true가 된다.	//입고가 반복진행되지 않도록 한다.
+				}else if(chkYesNo==JOptionPane.NO_OPTION){
+					chk = true;
+				}
+			}else{
+				chk = true;	//입고 목록이 없는 경우에도 true로 바꿔줘야 여러번 물어보지 않는다.
 			}
-			chk = true;	//입고가 진행되고 나서는 체크 변수가 true가 된다.	//입고가 반복진행되지 않도록 한다.
 		}
 	}
 	static void ipgoing(File file){
@@ -91,18 +102,18 @@ public class JCafeIpGo {
 					}
 				}
 				if(newChk==0){
-					int bigunit = Integer.parseInt(orderData[1][j]);
+					int unit = Integer.parseInt(orderData[1][j]);
 					if (orderData[2][j].equals("L")) {					//작은 단위로 변환
 						orderData[2][j] = "ml";
-						bigunit = bigunit *1000;
+						unit = unit *1000;
 					} else if (orderData[2][j].equals("Kg")) {
 						orderData[2][j] = "g";
-						bigunit = bigunit *1000;
+						unit = unit *1000;
 					} else if (orderData[2][j].equals("Box")) {
 						orderData[2][j] = "ea";
-						bigunit = bigunit *24;
+						unit = unit *24;
 					} 
-					orderData[1][j] =  bigunit+"";
+					orderData[1][j] =  unit+"";
 				}
 				pw.println(orderData[0][j]+"/"+orderData[1][j]+"/"+orderData[2][j]);
 			}

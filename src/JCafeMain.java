@@ -1,14 +1,9 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
@@ -40,6 +35,7 @@ public class JCafeMain extends JFrame implements ActionListener{
 	JTextField totalTf, cntTf, priceTf;//합계, 주문수량, 총 금액
 	
 	void init(){
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		setSize(600,800);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		btnMenu=new JButton[25];
@@ -48,6 +44,12 @@ public class JCafeMain extends JFrame implements ActionListener{
 		btnCancel=new JButton("취소");		
 		btnPayment=new JButton("결제");
 		btnStemp=new JButton("스템프");
+		
+		//버튼색 입히기
+		btnManager.setBackground(Color.white);
+		btnCancel.setBackground(Color.white);
+		btnPayment.setBackground(Color.white);
+		btnStemp.setBackground(Color.white);
 		
 		pnlMenu=new JPanel();
 		
@@ -61,18 +63,24 @@ public class JCafeMain extends JFrame implements ActionListener{
 			categoryBtns[i] = new JButton(categoryTitle[i]);
 			categoryBtns[i].addActionListener(this);
 		}
-		
+
+		//테이블 생성
 		tableOrderList=new JTable(model);
 		spOrderList=new JScrollPane(tableOrderList);
+		
+		
+		
 		for(int i=0;i<25;i++){
 			if(strMenu.length>i){
 				btnMenu[i]=new JButton();
 				btnMenu[i].addActionListener(this);
 				btnMenu[i].setMargin(new java.awt.Insets(0, 0, 0, 0));
 				setBtnName(strMenu[i],btnMenu[i]);
+				btnMenu[i].setBackground(Color.WHITE);
 			}
 			 else
 				btnMenu[i]=new JButton();
+			btnMenu[i].setBackground(Color.WHITE);
 		}
 		
 		totalTf = new JTextField("합계");
@@ -88,7 +96,7 @@ public class JCafeMain extends JFrame implements ActionListener{
 		
 		pnlNorth=new JPanel();
 		pnlMenu=new JPanel(new GridLayout(0,5,2,2));
-		pnlSouth=new JPanel(new GridLayout(0,2));
+		pnlSouth=new JPanel(new GridLayout(0,2,4,4));
 		
 		btnStemp.addActionListener(this);
 		btnManager.addActionListener(this);
@@ -130,8 +138,10 @@ public class JCafeMain extends JFrame implements ActionListener{
 			if(!(categoryBtns[i].getText().equals(""))){
 				categoryBtns[i].setBackground(Color.white);
 				pnlCategory.add(categoryBtns[i]);
+				categoryBtns[i].setFont(new Font("Verdana Bold",Font.PLAIN,11));
 			}
 		}
+		categoryBtns[0].setBackground(Color.lightGray);
 		pnlCategory.setBounds(10,130,560,30);
 		
 		this.add(pnlCategory);
@@ -183,10 +193,19 @@ public class JCafeMain extends JFrame implements ActionListener{
 		String fileNametoMakeBtn = null;
 		if(((JButton)e.getSource()).getText().equals("COFFEE")){
 			fileNametoMakeBtn = "coffee";
+			categoryBtns[0].setBackground(Color.lightGray);
+			categoryBtns[1].setBackground(Color.WHITE);
+			categoryBtns[2].setBackground(Color.WHITE);
 		}else if(((JButton)e.getSource()).getText().equals("LATTE")){
 			fileNametoMakeBtn = "latte";
+			categoryBtns[0].setBackground(Color.WHITE);
+			categoryBtns[1].setBackground(Color.lightGray);
+			categoryBtns[2].setBackground(Color.WHITE);
 		}else if(((JButton)e.getSource()).getText().equals("TEA")){
 			fileNametoMakeBtn = "tea";
+			categoryBtns[0].setBackground(Color.WHITE);
+			categoryBtns[1].setBackground(Color.WHITE);
+			categoryBtns[2].setBackground(Color.lightGray);
 		}
 		strMenu2 = JCafeGetMenuToMakeButton.getInfo(fileNametoMakeBtn);
 		strMenu = new String[strMenu2.length];
@@ -201,10 +220,13 @@ public class JCafeMain extends JFrame implements ActionListener{
 				btnMenu[i].addActionListener(this);
 				btnMenu[i].setMargin(new java.awt.Insets(0, 0, 0, 0));
 				setBtnName(strMenu[i],btnMenu[i]);
+				btnMenu[i].setBackground(Color.white);
 				pnlMenu.add(btnMenu[i]);
-			} else
+			} else	{
 				btnMenu[i] = new JButton();
 				pnlMenu.add(btnMenu[i]);
+				btnMenu[i].setBackground(Color.WHITE);
+			}
 		}
 		pnlMenu.setLayout(new GridLayout(0, 5, 2, 2));
 		pnlMenu.setBounds(10, 170, 560, 350);

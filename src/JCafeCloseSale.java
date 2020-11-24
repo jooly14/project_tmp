@@ -1,15 +1,26 @@
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.*;
-import java.text.DateFormat;
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Date;
 
-import javax.swing.*;
-import javax.swing.JSpinner.DateEditor;
-import javax.swing.table.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 
 import net.sourceforge.jdatepicker.impl.JDatePanelImpl;
 import net.sourceforge.jdatepicker.impl.JDatePickerImpl;
@@ -28,6 +39,7 @@ class GetTimesale extends JDialog implements ActionListener{  //´çÀÏ ÆÇ¸ÅÇ¥¸¦ ÆÄ
 	
 	GetTimesale(JCafeCloseSale s){  //´çÀÏ ÆÇ¸ÅÇ¥¸¦ ÆÄÀÏ·Î ¸¸µé¾îÁÜ
 		super(s,true);
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		this.setSize(500,500);
 		this.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
@@ -38,6 +50,7 @@ class GetTimesale extends JDialog implements ActionListener{  //´çÀÏ ÆÇ¸ÅÇ¥¸¦ ÆÄ
 		String[] header={"½Ã°£","Ç°¸ñ","¼ö·®","±Ý¾×"};                      //table ¸¸µé±â
 		model=new DefaultTableModel(contents,header);
 		dleTable=new JTable(model);
+		dleTable.setEnabled(false);
 		JScrollPane dleSp=new JScrollPane(dleTable);
 
 		panel.add(dleSp);
@@ -49,20 +62,21 @@ class GetTimesale extends JDialog implements ActionListener{  //´çÀÏ ÆÇ¸ÅÇ¥¸¦ ÆÄ
 		dleTable.getColumn("±Ý¾×").setPreferredWidth(50);
 		
 		delete=new JButton("ÆÇ¸ÅÃë¼Ò");
+		delete.setBackground(Color.WHITE);
 		no=new JButton("µ¹¾Æ°¡±â");
+		no.setBackground(Color.WHITE);
 		panel2.add(delete);
 		panel2.add(no);
 		delete.addActionListener(this);
 		no.addActionListener(this);
-		
-		
+			
 		fileOpen();
 		
 		JLabel label=new JLabel(dleTable.getValueAt(0, 0)+" ÆÇ¸Å³»¿ª");
 		panel1.add(label);
 		
 		//setColor//////////////////////////////////////////////////////////////////////////////////
-		Color color=new Color(0x003E00);
+		Color color=new Color(0x252525);
 		panel.setBackground(color);
 		panel1.setBackground(color);
 		panel2.setBackground(color);
@@ -120,7 +134,7 @@ class GetTimesale extends JDialog implements ActionListener{  //´çÀÏ ÆÇ¸ÅÇ¥¸¦ ÆÄ
 		}	
 	}
 	
-	void fileSave(){//ÆÇ¸Å Á¤º¸°¡ °»½ÅµÉ¶§ ¸¶´Ù »õ·ÎÀúÀå
+	/*void fileSave(){//ÆÇ¸Å Á¤º¸°¡ °»½ÅµÉ¶§ ¸¶´Ù »õ·ÎÀúÀå
 		try {
 			fw=new FileWriter("JCafeData/SaleData/CanclePayment/Delete");
 			pw=new PrintWriter(fw);
@@ -138,13 +152,13 @@ class GetTimesale extends JDialog implements ActionListener{  //´çÀÏ ÆÇ¸ÅÇ¥¸¦ ÆÄ
 					e.printStackTrace();
 				}
 		}
-	}
+	}*/
 }
 ////////////////////////////////////////////////////////////////////////////
 public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ ÆÇ¸Å·®, ±Ý¾×ÀÌ ÀúÀåµÉ °ø°£
 	JTable closeTable;
 	String contents[][]={};
-	JButton close,cancel;
+	JButton cancel;
 	JLabel totalLabel,tm1,title;//ÃÑ ÆÇ¸Å±Ý¾×ÀÌ µé¾î°¥ ·¹ÀÌºí,½Ã°£,³¯Â¥
 	String totalc;
 	DefaultTableModel model;
@@ -168,10 +182,11 @@ public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ Æ
 	PrintWriter pw2=null;//¼±ÅÃÇÑ ½Ã°£¿¡ ÆÈ¸°°Í ÆÄÀÏ·Î µû·Î ÀúÀå
 	FileWriter fw2=null;
 	
-	JCafeCloseSale(){
+	JCafeCloseSale(JCafeManagerMenu jCafeManagerMenu){
+		super(jCafeManagerMenu,true);
 		this.setSize(500,550);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		//this.setDefaultCloseOperation(3);
+	
 		titlep=new JPanel();
 		tm1=new JLabel("½Ã°£");
 		title=new JLabel("³¯Â¥");
@@ -198,6 +213,7 @@ public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ Æ
 		String[] header={"½Ã°£","Ç°¸ñ","¼ö·®","±Ý¾×"};
 		model=new DefaultTableModel(contents,header);
 		closeTable=new JTable(model);
+		closeTable.setEnabled(false);
 		closeSp=new JScrollPane(closeTable);
 		panel.add(closeSp);
 		
@@ -231,6 +247,69 @@ public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ Æ
 		this.setVisible(true);
 		
 	}
+	JCafeCloseSale(){
+		this.setSize(500,550);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+	
+		titlep=new JPanel();
+		tm1=new JLabel("½Ã°£");
+		title=new JLabel("³¯Â¥");
+	
+		//titlep.add(title);
+		
+		//³¯Â¥ ¼±ÅÃ º°µµ ÆÄÀÏ ´Ù¿î¹Þ¾Æ¾ßÇÔ
+		dmodel=new UtilDateModel();
+		JDatePanelImpl datePanel=new JDatePanelImpl(dmodel);
+		datePicker=new JDatePickerImpl(datePanel);
+		//titlep.add(datePicker);
+		day1=(dmodel.getYear()+""+(dmodel.getMonth()+1)+""+dmodel.getDay());
+		day2=(dmodel.getYear()+"³â "+(dmodel.getMonth()+1)+"¿ù "+dmodel.getDay()+"ÀÏ ");
+		//System.out.println(day1); //Å×½ºÆ®ÆÄÀÏ
+		datePicker.addActionListener(this);
+		
+		SimpleDateFormat format=new SimpleDateFormat("yyyy³âMM¿ù");
+		Date day=new Date();
+		day3=format.format(getYesterday(day));//ÇÏ·çÀü ³¯Â¥ ¹Þ¾Æ¿Í¾ß ¸¶°¨¿Ï·á¸¦ ¾ÈÇØµµ Àü³¯ ´Þ±îÁö ¸ÅÃâÀ» È®ÀÎÇÒ ¼ö ÀÖ´Ù.
+		
+		
+		//±ÝÀÏ ÆÇ¸Å·®ÀÌµé¾î°¥ Å×ÀÌºí
+		panel=new JPanel();
+		String[] header={"½Ã°£","Ç°¸ñ","¼ö·®","±Ý¾×"};
+		model=new DefaultTableModel(contents,header);
+		closeTable=new JTable(model);
+		closeTable.setEnabled(false);
+		closeSp=new JScrollPane(closeTable);
+		panel.add(closeSp);
+		
+		closeTable.getColumn("½Ã°£").setPreferredWidth(60); //table °¡·Î ±æÀÌ °¢°¢ Á¶Á¤
+		closeTable.getColumn("Ç°¸ñ").setPreferredWidth(200);
+		closeTable.getColumn("¼ö·®").setPreferredWidth(20);
+		closeTable.getColumn("±Ý¾×").setPreferredWidth(50);
+		
+		totalLabel=new JLabel();
+		cancel=new JButton("µ¹¾Æ°¡±â");
+		cancel.addActionListener(this);
+		panel2=new JPanel();
+		panel2.add(totalLabel);
+		panel2.add(cancel);
+		
+		setColor();
+		
+		
+		fileOpen();//ÆÄÀÏÀ» Å×ÀÌºí¿¡ ¿­¾î¾ß ½Ã°£Á¤º¸¸¦ ¹Þ¾Æ¿Í ÄÞº¸¹Ú½º¿¡ ³ÖÀ» ¼ö ÀÖ´Ù./////////////////////////////////
+		//ÄÞº¸¹Ú½º¿¡ ½Ã°£ ³Ö¾îÁÖ±â
+		
+		//tm2=new JComboBox(fcombo);
+		//tm2.addActionListener(this);
+		titlep.add(tm1);
+		titlep.add(tm2);
+		
+		this.add(titlep,"North");
+		this.add(panel,"Center");
+		this.add(panel2,"South");
+		this.setLocationRelativeTo(null);//´ÙÀÌ¾óÀÌ Áß°£¿¡ ¶ç¿öÁöµµ·Ï
+		
+	}
 	public static Date getYesterday(Date today){//ÇÏ·çÀü ³¯Â¥ ¹Þ¾Æ¿À±â
 		if(today==null){
 			throw new IllegalStateException ( "today is null" );
@@ -240,8 +319,9 @@ public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ Æ
 		return yesterday;
 	}
 	void setColor(){
-		Color color=new Color(0x003E00);
+		Color color=new Color(0x252525);
 		titlep.setBackground(color);
+		cancel.setBackground(Color.white);
 		panel.setBackground(color);
 		panel2.setBackground(color);
 		closeSp.getViewport().setBackground(Color.WHITE);//table ¹è°æ»ö ¼³Á¤ 
@@ -304,7 +384,7 @@ public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ Æ
 		if(e.getSource()==tm2){
 			String getCombo=tm2.getSelectedItem().toString();//ÄÞº¸¹Ú½º¿¡¼­ ¼±ÅÃÇÑ ½Ã°£
 					try {
-						fw2=new FileWriter("JCafeData/SaleData/DaySaleData/"+day1);       //¿øÇÏ´Â ½Ã°£´ëÀÇ ÁÖ¹®¸¸ µû·Î DeleteÆÄÀÏ¿¡ ³Ö¾îÁØ´Ù.
+						fw2=new FileWriter("JCafeData/SaleData/CanclePayment/Delete");       //¿øÇÏ´Â ½Ã°£´ëÀÇ ÁÖ¹®¸¸ µû·Î DeleteÆÄÀÏ¿¡ ³Ö¾îÁØ´Ù.
 						pw2=new PrintWriter(fw2);
 						for(int i=0;i<closeTable.getRowCount();i++){
 							String getRow=closeTable.getValueAt(i,0).toString();
@@ -387,7 +467,7 @@ public class JCafeCloseSale extends JDialog implements ActionListener{  //±ÝÀÏ Æ
 	}
 	
 	String totalReturn(){//////////////////////ÇÏ·ç ÆÇ¸Å¼öÀÔ ¹ÝÈ¯ÇØÁÖ´Â ¸Þ¼Òµå
-		return day2+"/"+totalc+"¿ø /";
+		return day2+"/"+totalc+"¿ø ";
 		
 	}
 	void fileClose(){//»õ·Î ÆÄÀÏ ¿­¶§ ±ò²ûÇÏµµ·Ï Áö¿öÁÜ

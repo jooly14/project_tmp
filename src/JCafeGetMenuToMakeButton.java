@@ -2,7 +2,6 @@ import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
-import java.net.SocketTimeoutException;
 
 public class JCafeGetMenuToMakeButton {
 	
@@ -60,6 +59,8 @@ public class JCafeGetMenuToMakeButton {
 		}
 		return strMenu2;
 	}
+	
+	//메인에서 필요한 메뉴명 가격등을 저장해주는 기능
 	static void setData(String[][] arr1,String[] arr2,String[] arr3,String[] arr4){
 		for(int i=0;i<arr1.length;i++){
 			arr2[i] = arr1[i][0];

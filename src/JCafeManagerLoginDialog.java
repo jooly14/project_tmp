@@ -5,8 +5,11 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.JLabel;
@@ -14,8 +17,6 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 
 import com.sun.glass.events.KeyEvent;
 
@@ -29,9 +30,10 @@ public class JCafeManagerLoginDialog extends JDialog implements ActionListener,K
 	int chk;	//키리스너에서 로그인메서드 실행중에도 엔터키 누르면 또 로그인메서드 호출하는 오류 잡으려고 만듦
 	
 	public JCafeManagerLoginDialog(JCafeMain mainFrame){
+		super(mainFrame, true);	//super를 붙이고 나니깐 처음 화면 떴을때 텍스트 필드에 포커스 가는 게 안된다....
 		this.mainFrame = mainFrame;
-		this.setLocation(mainFrame.getX(),mainFrame.getY());	//화면 위치 설정
-		
+		//this.setLocation(mainFrame.getX(),mainFrame.getY());	//화면 위치 설정
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		
 		JLabel title = new JLabel(" MANAGER LOGIN ");
 		
@@ -43,6 +45,11 @@ public class JCafeManagerLoginDialog extends JDialog implements ActionListener,K
 		pwF = new JPasswordField(13);
 		idTf.addKeyListener(this);
 		pwF.addKeyListener(this);
+		this.addWindowListener(new WindowAdapter(){
+			public void windowOpened(WindowEvent e){
+				idTf.requestFocus();
+			}
+		});
 		
 		
 		JLabel idlbl = new JLabel("아이디      :      ");
@@ -110,8 +117,9 @@ public class JCafeManagerLoginDialog extends JDialog implements ActionListener,K
 		add(pnlOKCancel);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setSize(390,350);
+		this.setLocationRelativeTo(null);
 		setVisible(true);
-		idTf.requestFocus();
+		idTf.requestFocus();	
 	}
 	
 	@Override public void actionPerformed(ActionEvent e) {
@@ -127,9 +135,9 @@ public class JCafeManagerLoginDialog extends JDialog implements ActionListener,K
 			chk=1;
 			JOptionPane.showMessageDialog(this, "                      로그인되었습니다.", "", JOptionPane.PLAIN_MESSAGE, null);
 			mainFrame.logIn();
+			dispose();
 			new JCafeManagerMenu(mainFrame);
 			
-			dispose();
 		}else{
 			chk= 1;
 			JOptionPane.showMessageDialog(this, "       아이디 또는 비밀번호가 틀렸습니다.", "", JOptionPane.PLAIN_MESSAGE, null);

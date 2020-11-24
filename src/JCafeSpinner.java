@@ -436,21 +436,29 @@ public class JCafeSpinner extends JPanel implements ActionListener ,PropertyChan
 				// dispose();
 			}
 		} else if (e.getSource() == btnInsert) {
-			String[] modelData = new String[7];
-			modelData[0] = tfName.getText();
-			modelData[1] = "";
-			modelData[2] = "";
-			modelData[3] = "";
-			modelData[4] = tfQuantity.getText();
-			modelData[5] = combo.getSelectedItem().toString();
-			modelData[6] = "";
-			tmodel.addRow(modelData);
-			tfName.setText("");
-			tfQuantity.setText("");
-			combo.setSelectedIndex(0);
+			if(tfName.getText().equals("")||tfQuantity.getText().equals("")){
+				JOptionPane.showMessageDialog(this, "값을 입력하세요");
+			}else{
+				String[] modelData = new String[7];
+				modelData[0] = tfName.getText();
+				modelData[1] = "";
+				modelData[2] = "";
+				modelData[3] = "";
+				modelData[4] = tfQuantity.getText();
+				modelData[5] = combo.getSelectedItem().toString();
+				modelData[6] = "";
+				tmodel.addRow(modelData);
+				tfName.setText("");
+				tfQuantity.setText("");
+				combo.setSelectedIndex(0);
+			}
 		} else {
 			int selRow = table.getSelectedRow();
-			removeMaterial(selRow);
+			if(selRow==-1){
+				JOptionPane.showMessageDialog(this, "재료를 선택 후 버튼을 눌러주세요");
+			}else{
+				removeMaterial(selRow);
+			}
 			
 		}
 	}

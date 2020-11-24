@@ -1,6 +1,7 @@
 import java.awt.Color;
 import java.text.SimpleDateFormat;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
@@ -13,12 +14,16 @@ public class JCafeReceipt extends JFrame{
 	String strThisTime;
 	String strCardNum,strInstallment;
 	void init(String[][]order,boolean cash) {
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		int row=order.length;
 		//setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		JPanel pnlNorth=new JPanel();
 		pnlNorth.add(new JLabel("[영  수  증]"));
 		this.add(pnlNorth,"North");
 		pnlCenter=new JPanel(null);
+		pnlCenter.setBackground(Color.white);
+		pnlNorth.setBackground(Color.white);
+
 		
 		long time= System.currentTimeMillis();
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyy.MM.dd              [매출시간]  kk:mm:ss");
@@ -77,6 +82,7 @@ public class JCafeReceipt extends JFrame{
 		}
 		//패널에 영수증내용 추가
 		this.add(pnlCenter);
+		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
 	public JCafeReceipt(JCafePayment jcp,boolean cash) {//<현금계산이면 cash=true, 카드계산이면cash=false

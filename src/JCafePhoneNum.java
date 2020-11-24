@@ -1,10 +1,18 @@
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
-import javax.swing.*;
+import javax.swing.BorderFactory;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 
 public class JCafePhoneNum extends JDialog implements ActionListener,KeyListener {
 	JButton[] btnKeypad;// 0~15까지 버튼이 담겨있음
@@ -13,27 +21,37 @@ public class JCafePhoneNum extends JDialog implements ActionListener,KeyListener
 	int order;//몇번째 번호 입력중인지 세어줄 변수
 	boolean confirm; //
 	
+	Color color = new Color(0xcbe2a8);
 	void init() {//자료 초기화 밑 화면표현
-		setSize(250,300);
-		
+		setSize(300,330);
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		String[] strKeypad= {"1","2","3","4","5","6","7","8","9","","0","정정","확인","초기화","취소"};
 		btnKeypad=new JButton[strKeypad.length];//버튼배열 길이 지정
 		JPanel pnlCenter=new JPanel(new GridLayout(5,3));
 		for(int i=0;i<btnKeypad.length;i++) {
 			btnKeypad[i]=new JButton(strKeypad[i]);	// 버튼배열 생성
 			btnKeypad[i].addActionListener(this);	// 액션리스너
+			if(i/3==0||i/3==2||i/3==4){
+				btnKeypad[i].setBackground(color);
+			}else{
+				btnKeypad[i].setBackground(Color.white);
+			}
+			btnKeypad[i].setFont(new Font("Dialog", Font.BOLD, 13));
+			btnKeypad[i].setBorder(BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
 			pnlCenter.add(btnKeypad[i]);			// 센터패널에 붙이기
 		}
 		btnKeypad[9].setEnabled(false);				// 아무것도 없는 버튼 비활성화
 		for(int i=0;i<strNumber.length;i++) strNumber[i]="_";
-		
+		 btnKeypad[0].addKeyListener(this);
 		lbl=new JLabel("_ _ _ - _ _ _ _ - _ _ _ _");// 처음에 번호입력 전 노출될 Label
+		lbl.setFont(new Font("Dialog", Font.BOLD, 20));
 		JPanel pnlNorth=new JPanel();
 		pnlNorth.add(lbl);
 		
 		this.add(pnlNorth,"North");
 		this.add(pnlCenter);
 		this.addKeyListener(this);
+		this.setLocationRelativeTo(null);
 		this.setVisible(true);
 	}
 	public JCafePhoneNum(JCafePayment jcp) {//생성자

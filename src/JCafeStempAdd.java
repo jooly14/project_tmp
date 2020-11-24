@@ -12,10 +12,9 @@ public class JCafeStempAdd {
 	
 	FileWriter fw;
 	PrintWriter pw;
-	
+	int userStemp;
 	public JCafeStempAdd(String phoneNum,int stempAdd) {
 		try {
-
 			fr=new FileReader(new File("JCafeData\\StempData"));
 			br=new BufferedReader(fr);
 			
@@ -37,6 +36,7 @@ public class JCafeStempAdd {
 			for(int i=0;i<data.length;i++){
 				String[] str=data[i].split("/"); // 배열에 한줄의 번호,스템프갯수 받아옴
 				if(str[0].equals(phoneNum)){ // 파일의 데이터의 번호가 입력한 전화번호와 같다면
+					userStemp=Integer.parseInt(str[1]);
 					pw.println(phoneNum+"/"+(stempAdd+Integer.parseInt(str[1]))); //입력한번호/(원래스템프+추가될스템프)입력
 					haveOrNot=false;//신규사용자인지를 false로 바꾼다.
 				}else//입력한 번호가 아니라면

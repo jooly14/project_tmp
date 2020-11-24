@@ -1,4 +1,4 @@
-import java.awt.GridLayout;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -9,8 +9,17 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import javax.swing.*;
+import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableColumnModel;
 
 //class JCafeStempTable extends JDialog implements ActionListener{
 class JCafeStempTable extends JDialog implements ActionListener{
@@ -21,36 +30,55 @@ class JCafeStempTable extends JDialog implements ActionListener{
 	FileReader fr;
 	DefaultTableModel model;
 	JTable table;
-	void init(Boolean b){ //값 초기화(Boolean으로 스템프 테이블 선택 가능or불가능 하게)
+	JPanel pnl;
+	JScrollPane spTable;
+	void init(boolean b){ //값 초기화(Boolean으로 스템프 테이블 선택 가능or불가능 하게)
+		this.setIconImage(new ImageIcon("JCafeData\\ImageData\\JCafe icon.png").getImage());
 		setSize(400,500);
-		
 		model=new DefaultTableModel(strTable,strHeader);
 		table=new JTable(model);
-		JScrollPane spTable=new JScrollPane(table);
+		spTable=new JScrollPane(table);
 		showData();
+		
+		DefaultTableCellRenderer dtcr = new DefaultTableCellRenderer();//가운데정렬
+		dtcr.setHorizontalAlignment(SwingConstants.CENTER);
+		TableColumnModel tcm = table.getColumnModel();
+		for(int i = 0 ; i < tcm.getColumnCount() ; i++){
+		      	tcm.getColumn(i).setCellRenderer(dtcr);  
+		}
 		
 		btnRefresh=new JButton("새로고침");
 		btnChangeNumber=new JButton("번호변경");
-		table.setEnabled(b);
-		btnRefresh.addActionListener(this);
-		
-		JPanel pnl=new JPanel(new GridLayout(1,2));
-		pnl.add(btnChangeNumber);
-		pnl.add(btnRefresh);
-		this.add(pnl,"South");
+		btnRefresh.setBackground(Color.WHITE);
+		btnChangeNumber.setBackground(Color.WHITE);
+		JLabel lblTitle=new JLabel("스탬프 관리");
+		lblTitle.setForeground(Color.WHITE);
+		lblTitle.setBounds(160,5,100,30);
+		spTable.setBounds(30,30,330,380);
+		if(b){
+			btnRefresh.setBounds(30, 420, 330, 30);
+			table.setEnabled(false);
+		}else{
+			btnRefresh.setBounds(30, 420, 160, 30);
+			btnChangeNumber.setBounds(200, 420, 160, 30);
+		}
+		this.setLayout(null);		
+		this.add(lblTitle);
 		this.add(spTable);
+		this.add(btnRefresh);
+		this.add(btnChangeNumber);		
+		getContentPane().setBackground(new Color(0x252525));
+		spTable.getViewport().setBackground(Color.WHITE);
 		setLocationRelativeTo(null);
 		setVisible(true);
 	}
 	JCafeStempTable(JCafeMain jcm) {//메인에서 크루접속시 번호변경 액션리스너 x
 		super(jcm,true);
-		init(false);
-		btnChangeNumber.addActionListener(this);
+		init(true);		
 	}
 	JCafeStempTable(JCafeManagerMenu jcmm){// 여기만 번호변경 액션리스너 추가
 		super(jcmm,true);
-		init(true);
-		btnChangeNumber.addActionListener(this);
+		init(false);
 	}
 	void showData(){// 스템프데이터 읽어와서 화면에 뿌려주는 역할
 		for(int i=0;i<model.getRowCount();)
@@ -106,8 +134,8 @@ class JCafeStempTable extends JDialog implements ActionListener{
 		}
 	@Override public void actionPerformed(ActionEvent e) {
 		if(e.getSource()==btnRefresh)
-			showData();//데이터 보여주세용
+			showData();//새로고침
 		if(e.getSource()==btnChangeNumber)
-			numDataChange();//번호바꿔주세용
+			numDataChange();//번호변경
 	}
 }
