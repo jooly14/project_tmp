@@ -5,15 +5,14 @@ import javax.swing.JButton;
 import javax.swing.JPanel;
 
 public class NextBlock extends JPanel{
-	TetrisMain main;
+	GamePlayPanel main;
 	JButton btnNext[]= new JButton[4];
 	int x = 0;
 	int x2 = 40;
 	int y = 20;
-	public NextBlock(TetrisMain main) {
+	public NextBlock(GamePlayPanel main) {
 		this.main = main;
 		this.setLayout(null);
-		this.setBorder(BorderFactory.createLineBorder(Color.BLACK));
 		for (int i = 0; i < btnNext.length; i++) {
 			btnNext[i] = new JButton();
 			add(btnNext[i]);

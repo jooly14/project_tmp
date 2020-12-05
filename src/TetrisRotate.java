@@ -1,11 +1,11 @@
 import javax.swing.JButton;
 
 public class TetrisRotate {
-	TetrisMain main;
+	GamePlayPanel main;
 	int currentBlock;
 	int rotateNum;
 	JButton[] btnNew;
-	public TetrisRotate(TetrisMain main) {
+	public TetrisRotate(GamePlayPanel main) {
 		this.main = main;
 	}
 	
