@@ -12,6 +12,7 @@ import javax.swing.JPanel;
 public class TetrisMain extends JFrame implements ActionListener,KeyListener{
 	GamePlayPanel pnl;
 	JPanel firstPnl;
+	boolean keyOk =true;
 	public TetrisMain() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(800,868);
@@ -47,30 +48,33 @@ public class TetrisMain extends JFrame implements ActionListener,KeyListener{
 	public void keyPressed(KeyEvent e) {
 		if(pnl.keyEventOK){
 			pnl.yes = false;
-			
-			if(pnl.startStopEnd==1){
-				if(e.getKeyCode()==KeyEvent.VK_LEFT){
-					pnl.moveLeft();
-				}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){
-					pnl.moveRight();
-				}else if(e.getKeyCode()==KeyEvent.VK_UP){
-					pnl.rotate();
-				}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
-					pnl.moveDown();
-				}else if(e.getKeyCode()==KeyEvent.VK_SPACE){
+			if(keyOk){
+				keyOk = false;
+				if(pnl.startStopEnd==1){
+					if(e.getKeyCode()==KeyEvent.VK_LEFT){
+						pnl.moveLeft();
+					}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){
+						pnl.moveRight();
+					}else if(e.getKeyCode()==KeyEvent.VK_UP){
+						pnl.rotate();
+					}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
+						pnl.moveDown();
+					}else if(e.getKeyCode()==KeyEvent.VK_SPACE){
 						if(!pnl.spbar_t.isRunning){
 							pnl.spbar_t = new Spacebar_Thread(pnl);
 							pnl.spbar_t.start();
 						}
+					}
+				}
+				if(e.getKeyCode()==KeyEvent.VK_ENTER){
+					if(pnl.startStopEnd==1){
+						pnl.startStopEnd = 2;
+					}else{
+						pnl.startStopEnd = 1;
+					}
 				}
 			}
-			if(e.getKeyCode()==KeyEvent.VK_ENTER){
-				if(pnl.startStopEnd==1){
-					pnl.startStopEnd = 2;
-				}else{
-					pnl.startStopEnd = 1;
-				}
-			}
+			keyOk = true;
 			pnl.yes = true;
 		}
 	}

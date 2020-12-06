@@ -44,7 +44,7 @@ class NewBlock extends Thread{
 }
 class TimeCounter extends Thread{
 	GamePlayPanel main;
-	int timeLimit = 1000*60*1;
+	int timeLimit = 1000*60*5;
 	long limit;
 	long timeRemaining;
 	JLabel lbl;
@@ -183,25 +183,30 @@ public class GamePlayPanel extends JPanel{
 //		new TetrisMain();
 //	}
 	void newBlock(){
-		currentBlock = nextBlock;
-		nextBlock = random.nextInt(7);
-		nb.randomBlock(nextBlock);
-//		currentBlock = 0;
-		rotateNum = 0;
-		System.out.println(currentBlock);
-		for(int i=0;i<btnNew.length;i++){
-			btnNew[i] = new JButton();
-		
-			randomBlock(btnNew[i],currentBlock,i);
-			
+		if(stackedBlock[7][0]==null){
+			currentBlock = nextBlock;
+		currentBlock = 0;
+			nextBlock = random.nextInt(7);
+			nb.randomBlock(nextBlock);
+			rotateNum = 0;
+			System.out.println(currentBlock);
+			for(int i=0;i<btnNew.length;i++){
+				btnNew[i] = new JButton();
+				
+				randomBlock(btnNew[i],currentBlock,i);
+				
 //			if(stackedBlock[btnNew[i].getX()/20][0]!=null){
 //				counter.chgIsRunning();
 //				t.chgIsRunning();
 //				spbar_t.chgIsRunning();
 //			}
+				
+				btnNew[i].setBorder(BorderFactory.createRaisedBevelBorder());
+				pnl.add(btnNew[i]);
+			}
 			
-			btnNew[i].setBorder(BorderFactory.createRaisedBevelBorder());
-			pnl.add(btnNew[i]);
+		}else{
+			startStopEnd =3;
 		}
 		
 	}
@@ -466,32 +471,35 @@ public class GamePlayPanel extends JPanel{
 		}
 	}
 	synchronized void rotate(){
-		switch (currentBlock) {
-		case 0:
-			tetrisRotate.rotate0(rotateNum,btnNew);
-			break;
-		case 1:
-			tetrisRotate.rotate1(rotateNum,btnNew);
-			break;
-		case 2:
-			tetrisRotate.rotate2(rotateNum,btnNew);
-			break;
-		case 3:
-			tetrisRotate.rotate3(rotateNum,btnNew);
-			break;
-		case 4:
-			tetrisRotate.rotate4(rotateNum,btnNew);
-			break;
-		case 5:
-			tetrisRotate.rotate5(rotateNum,btnNew);
-			break;
-		case 6:
-			break;
-		}
-		if(rotateNum<3){
-			rotateNum++;
-		}else{
-			rotateNum = 0;
+		if(btnNew[3]!=null){
+			switch (currentBlock) {
+			case 0:
+				tetrisRotate.rotate0(rotateNum,btnNew,stackedBlock);
+				break;
+			case 1:
+				tetrisRotate.rotate1(rotateNum,btnNew,stackedBlock);
+				break;
+			case 2:
+				tetrisRotate.rotate2(rotateNum,btnNew,stackedBlock);
+				break;
+			case 3:
+				tetrisRotate.rotate3(rotateNum,btnNew,stackedBlock);
+				break;
+			case 4:
+				tetrisRotate.rotate4(rotateNum,btnNew,stackedBlock);
+				break;
+			case 5:
+				tetrisRotate.rotate5(rotateNum,btnNew,stackedBlock);
+				break;
+			case 6:
+				break;
+			}
+			if(rotateNum<3){
+				rotateNum++;
+			}else{
+				rotateNum = 0;
+			}
+			
 		}
 	}
 	
