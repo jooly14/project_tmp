@@ -185,7 +185,7 @@ public class GamePlayPanel extends JPanel{
 	void newBlock(){
 		if(stackedBlock[7][0]==null){
 			currentBlock = nextBlock;
-		currentBlock = 0;
+		currentBlock = 1;
 			nextBlock = random.nextInt(7);
 			nb.randomBlock(nextBlock);
 			rotateNum = 0;
