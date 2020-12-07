@@ -9,73 +9,95 @@ import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 
-public class TetrisMain extends JFrame implements ActionListener,KeyListener{
+public class TetrisMain extends JFrame implements KeyListener{
 	GamePlayPanel pnl;
-	JPanel firstPnl;
+	FirstPnl firstPnl;
 	boolean keyOk =true;
+	ScorePnl scorePnl;
+	int currentPnl = 0;
 	public TetrisMain() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(800,868);
 		setLayout(null);
-		firstPnl = new JPanel();
-		firstPnl.setLayout(null);
-		firstPnl.setBounds(0,0, 800, 868);
-		JButton b = new JButton(new ImageIcon("tetris_sky_back.png"));
-		b.setBounds(-10,0, 800, 835);
-		firstPnl.add(b);
+		firstPnl = new FirstPnl();
+		
+		
 		add(firstPnl);
-		b.addActionListener(this);
+		
+		
+		this.addKeyListener(this);
+		this.setFocusable(true);
+		this.requestFocus();
+		
 		setVisible(true);
 	}
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		new TetrisMain();
 	}
-	@Override
-	public void actionPerformed(ActionEvent arg0) {
-		// TODO Auto-generated method stub
+	void showScore(int point){
+		scorePnl = new ScorePnl(point);
+		currentPnl++;
 		remove(firstPnl);
-		pnl = new GamePlayPanel();
-		pnl.setLocation(0,0);
-		this.addKeyListener(this);
-		this.setFocusable(true);
-		this.requestFocus();
-		add(pnl);
+		add(scorePnl);
 		repaint();
 		revalidate();
+		
 	}
 	@Override
 	public void keyPressed(KeyEvent e) {
-		if(pnl.keyEventOK){
-			pnl.yes = false;
-			if(keyOk){
-				keyOk = false;
-				if(pnl.startStopEnd==1){
-					if(e.getKeyCode()==KeyEvent.VK_LEFT){
-						pnl.moveLeft();
-					}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){
-						pnl.moveRight();
-					}else if(e.getKeyCode()==KeyEvent.VK_UP){
-						pnl.rotate();
-					}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
-						pnl.moveDown();
-					}else if(e.getKeyCode()==KeyEvent.VK_SPACE){
-						if(!pnl.spbar_t.isRunning){
-							pnl.spbar_t = new Spacebar_Thread(pnl);
-							pnl.spbar_t.start();
+		if(currentPnl==0){
+			showScore(100);
+			
+//			pnl = new GamePlayPanel(this);
+//			pnl.setLocation(0,0);
+//			currentPnl++;
+//			try {
+//				Thread.sleep(200);
+//			} catch (InterruptedException e1) {
+//				// TODO Auto-generated catch block
+//				e1.printStackTrace();
+//			}
+//			remove(firstPnl);
+//			add(pnl);
+//			repaint();
+//			revalidate();
+		}else if(currentPnl==1){
+			if(pnl.keyEventOK&&pnl.startStopEnd!=3){
+				pnl.yes = false;
+				if(keyOk){
+					keyOk = false;
+					if(pnl.startStopEnd==1){
+						if(e.getKeyCode()==KeyEvent.VK_LEFT){
+							pnl.moveLeft();
+						}else if(e.getKeyCode()==KeyEvent.VK_RIGHT){
+							pnl.moveRight();
+						}else if(e.getKeyCode()==KeyEvent.VK_UP){
+							pnl.rotate();
+						}else if(e.getKeyCode()==KeyEvent.VK_DOWN){
+							pnl.moveDown();
+						}else if(e.getKeyCode()==KeyEvent.VK_SPACE){
+							if(!pnl.spbar_t.isRunning){
+								pnl.spbar_t = new Spacebar_Thread(pnl);
+								pnl.spbar_t.start();
+							}
+						}
+					}
+					if(e.getKeyCode()==KeyEvent.VK_ENTER){
+						System.out.println(1283972184);
+						if(pnl.startStopEnd==1){
+							pnl.startStopEnd = 2;
+							pnl.addPausePnl();
+						}else{
+							pnl.startStopEnd = 1;
+							pnl.removePausePnl();
 						}
 					}
 				}
-				if(e.getKeyCode()==KeyEvent.VK_ENTER){
-					if(pnl.startStopEnd==1){
-						pnl.startStopEnd = 2;
-					}else{
-						pnl.startStopEnd = 1;
-					}
-				}
+				keyOk = true;
+				pnl.yes = true;
 			}
-			keyOk = true;
-			pnl.yes = true;
+			
 		}
 	}
 	@Override

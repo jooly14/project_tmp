@@ -2,11 +2,12 @@ import java.awt.Color;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 public class NextBlock extends JPanel{
 	GamePlayPanel main;
-	JButton btnNext[]= new JButton[4];
+	JLabel btnNext[]= new JLabel[4];
 	int x = 0;
 	int x2 = 40;
 	int y = 20;
@@ -14,7 +15,9 @@ public class NextBlock extends JPanel{
 		this.main = main;
 		this.setLayout(null);
 		for (int i = 0; i < btnNext.length; i++) {
-			btnNext[i] = new JButton();
+			btnNext[i] = new JLabel();
+			btnNext[i].setOpaque(true);
+			btnNext[i].setBorder(BorderFactory.createRaisedBevelBorder());
 			add(btnNext[i]);
 		}
 	}

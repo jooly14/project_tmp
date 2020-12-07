@@ -15,26 +15,31 @@ import javax.swing.JPanel;
 class NewBlock extends Thread{
 	GamePlayPanel main;
 	boolean isRunning = true;
-	public NewBlock(GamePlayPanel main) {
+	int speed;
+	public NewBlock(GamePlayPanel main,int speed) {
 		this.main = main;
+		this.speed = speed;
 	}
 	@Override
 	public void run() {
-		main.newBlock();
-		while(isRunning){
-			if(main.startStopEnd==1){
-				try {
-						Thread.sleep(200);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		if(main.startStopEnd!=3){
+			main.newBlock();
+			
+			while(isRunning){
+				if(main.startStopEnd==1){
+					try {
+							Thread.sleep(speed);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if(main.yes){
+						main.moveBlock();
+					}
+					
+				}else if(main.startStopEnd==3){
+					break;
 				}
-				if(main.yes){
-					main.moveBlock();
-				}
-				
-			}else if(main.startStopEnd==3){
-				break;
 			}
 		}
 	}
@@ -44,7 +49,7 @@ class NewBlock extends Thread{
 }
 class TimeCounter extends Thread{
 	GamePlayPanel main;
-	int timeLimit = 1000*60*5;
+	int timeLimit = 1000*60*1;
 	long limit;
 	long timeRemaining;
 	JLabel lbl;
@@ -105,8 +110,9 @@ class TimeCounter extends Thread{
 				}
 	
 				if(timeRemaining<0){
-					lbl.setText("TIME OUT");
-					main.startStopEnd =3;
+//					lbl.setText("TIME OUT");
+					main.startStopEnd =3;	
+					main.addEndPnl(1);
 					break;
 				}
 			}
@@ -126,23 +132,35 @@ class GamePnl extends JPanel{
 	}
 }
 public class GamePlayPanel extends JPanel{
+	int previousClear = 0;
+	int point;
+	JLabel pointLbl;
 	boolean yes = true;
 	boolean keyEventOK = true;
 	int startStopEnd = 1;
 	GamePnl pnl;
-	JButton[] btnNew = new JButton[4];
+	JLabel[] btnNew = new JLabel[4];
 	NewBlock t;
 	int currentBlock;
 	int nextBlock;
 	int rotateNum;
 	TimeCounter counter;
 	Random random;
-	JButton[][] stackedBlock = new JButton[15][30];
+	JLabel[][] stackedBlock = new JLabel[15][30];
 	Spacebar_Thread spbar_t;
 	TetrisRotate tetrisRotate;
 	
 	NextBlock nb;
-	public GamePlayPanel() {
+	TetrisMain main;
+	
+	int speed = 500;	//초기 스피드
+	
+	PausePnl pausePnl;
+	
+	JLabel back;
+	
+	public GamePlayPanel(TetrisMain main) {
+		this.main = main;
 		// TODO Auto-generated constructor stub
 		setSize(800,868);
 		setLayout(null);
@@ -152,16 +170,22 @@ public class GamePlayPanel extends JPanel{
 //		btn.setBounds(7*20,300,20,20);
 //		stackedBlock[0][0] = btn;
 		
-		JLabel back = new JLabel(new ImageIcon("tetris_main.png"));
+		pausePnl = new PausePnl();
+		
+		
+		back = new JLabel(new ImageIcon("tetris_main.png"));
 		back.setBounds(-10, 30, 800, 800);
 		
+		pointLbl = new JLabel();
+		pointLbl.setBounds(470,700,100,100);
+		pointLbl.setForeground(Color.white);
+		pointLbl.setText(point+"");
 		
 		nextBlock = random.nextInt(7);
 		
 		nb = new NextBlock(this);
 		nb.setBounds(550,400,100,100);
 		nb.setBackground(new Color(0x242554));
-		add(nb);
 		
 		tetrisRotate = new TetrisRotate(this);
 		
@@ -170,29 +194,41 @@ public class GamePlayPanel extends JPanel{
 		
 		pnl = new GamePnl();
 		pnl.setBounds(104, 97, 15*20, 30*20);
-		pnl.setBackground(Color.BLACK);
+		pnl.setBackground(Color.black);
+		add(pointLbl);
+		add(nb);
 		add(pnl);
 		add(back);
-		t = new NewBlock(this);
+		t = new NewBlock(this,speed);
 		t.start();
 		spbar_t = new Spacebar_Thread(this);
 		spbar_t.chgIsRunning();
+		
 	}
 //	public static void main(String[] args) {
 //		// TODO Auto-generated method stub
 //		new TetrisMain();
 //	}
 	void newBlock(){
-		if(stackedBlock[7][0]==null){
+		for(int i=0;i<stackedBlock.length;i++){
+			if(stackedBlock[i][0]!=null){
+				//끝
+				startStopEnd =3;
+				System.out.println("end");
+				addEndPnl(0);
+				break;
+			}
+		}
+		if(startStopEnd!=3){
 			currentBlock = nextBlock;
-		currentBlock = 1;
+//		currentBlock = 5;
 			nextBlock = random.nextInt(7);
 			nb.randomBlock(nextBlock);
 			rotateNum = 0;
 			System.out.println(currentBlock);
 			for(int i=0;i<btnNew.length;i++){
-				btnNew[i] = new JButton();
-				
+				btnNew[i] = new JLabel();
+				btnNew[i].setOpaque(true);
 				randomBlock(btnNew[i],currentBlock,i);
 				
 //			if(stackedBlock[btnNew[i].getX()/20][0]!=null){
@@ -205,12 +241,11 @@ public class GamePlayPanel extends JPanel{
 				pnl.add(btnNew[i]);
 			}
 			
-		}else{
-			startStopEnd =3;
+			
 		}
 		
 	}
-	void randomBlock(JButton btnNew, int ran, int i){
+	void randomBlock(JLabel btnNew, int ran, int i){
 		switch (ran) {
 		case 0:
 			btnNew.setBounds(7*20,20*i,20,20);
@@ -307,7 +342,7 @@ public class GamePlayPanel extends JPanel{
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
-							t = new NewBlock(this);
+							t = new NewBlock(this,speed);
 							t.start();
 							return;
 						}
@@ -326,7 +361,7 @@ public class GamePlayPanel extends JPanel{
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 				}
-				t = new NewBlock(this);
+				t = new NewBlock(this,speed);
 				t.start();
 				break;
 			}
@@ -338,6 +373,7 @@ public class GamePlayPanel extends JPanel{
 			stackedBlock[btnNew[i].getX()/20][btnNew[i].getY()/20] = btnNew[i];
 //			System.out.println("!!!!!!!"+btnNew[i].getX()/20+" "+btnNew[i].getY()/20);
 		}
+		point +=100;
 		clearLines();
 	}
 	synchronized void clearLines(){
@@ -380,8 +416,65 @@ public class GamePlayPanel extends JPanel{
 				}
 			}
 		}
+		//줄 깼을 때 점수 주기
+		if(lineToClear.size()!=0){
+			point += 1000*lineToClear.size()*(previousClear+1);
+			if(previousClear>3){
+				previousClear=3;
+			}else{
+				previousClear++;
+			}
+		}else{
+			previousClear=0;
+		}
+		pointLbl.setText(point+"");
 		repaint();
 		revalidate();
+		
+		if(point>30000){
+			speed = 60;
+		}else if(point>20000){
+			speed = 80;
+		}else if(point>15000){
+			speed = 100;
+		}else if(point>10000){
+			speed = 200;
+		}else if(point>5000){
+			speed = 300;
+		}else if(point>500){
+			speed = 400;
+		}	
+			
+			
+	}
+	
+	void addPausePnl(){
+		this.remove(back);
+		this.add(pausePnl);
+		this.add(back);
+		this.remove(pnl);
+		repaint();
+		revalidate();
+	}
+	void removePausePnl(){
+		this.remove(pausePnl);
+		this.remove(back);
+		this.add(pnl);
+		this.add(back);
+		repaint();
+		revalidate();
+	}
+	void addEndPnl(int i){
+		this.remove(back);
+		this.remove(pnl);
+		this.add(new EndPnl(i,this));
+		this.add(pnl);
+		this.add(back);
+		repaint();
+		revalidate();
+	}
+	void showScore(){
+		main.showScore(point);
 	}
 //	@Override
 //	public void keyPressed(KeyEvent e) {
@@ -512,19 +605,21 @@ class Spacebar_Thread extends Thread{
 	}
 	@Override
 	public void run() {
-		while (isRunning) {
-			if(main.startStopEnd==1){
-				try {
-					Thread.sleep(10);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+		if(main.startStopEnd!=3){
+			while (isRunning) {
+				if(main.startStopEnd==1){
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					if(main.yes){
+						main.moveBlock();
+					}
+				}else if(main.startStopEnd==3){
+					break;
 				}
-				if(main.yes){
-					main.moveBlock();
-				}
-			}else if(main.startStopEnd==3){
-				break;
 			}
 		}
 	}
