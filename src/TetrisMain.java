@@ -20,11 +20,7 @@ public class TetrisMain extends JFrame implements KeyListener{
 		setSize(800,868);
 		setLayout(null);
 		firstPnl = new FirstPnl();
-		
-		
 		add(firstPnl);
-		
-		
 		this.addKeyListener(this);
 		this.setFocusable(true);
 		this.requestFocus();
@@ -36,32 +32,37 @@ public class TetrisMain extends JFrame implements KeyListener{
 		new TetrisMain();
 	}
 	void showScore(int point){
-		scorePnl = new ScorePnl(point);
-		currentPnl++;
-		remove(firstPnl);
+		scorePnl = new ScorePnl(point, this);
+		currentPnl=2;
+		remove(pnl);
 		add(scorePnl);
 		repaint();
 		revalidate();
 		
 	}
+	void showFirstPnl(){
+		remove(scorePnl);
+		currentPnl=0;
+		add(firstPnl);
+		repaint();
+		revalidate();
+	}
 	@Override
 	public void keyPressed(KeyEvent e) {
 		if(currentPnl==0){
-			showScore(100);
-			
-//			pnl = new GamePlayPanel(this);
-//			pnl.setLocation(0,0);
-//			currentPnl++;
-//			try {
-//				Thread.sleep(200);
-//			} catch (InterruptedException e1) {
-//				// TODO Auto-generated catch block
-//				e1.printStackTrace();
-//			}
-//			remove(firstPnl);
-//			add(pnl);
-//			repaint();
-//			revalidate();
+			pnl = new GamePlayPanel(this);
+			pnl.setLocation(0,0);
+			currentPnl=1;
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+			remove(firstPnl);
+			add(pnl);
+			repaint();
+			revalidate();
 		}else if(currentPnl==1){
 			if(pnl.keyEventOK&&pnl.startStopEnd!=3){
 				pnl.yes = false;
@@ -97,7 +98,19 @@ public class TetrisMain extends JFrame implements KeyListener{
 				keyOk = true;
 				pnl.yes = true;
 			}
-			
+		}else if(currentPnl ==2){
+			if (e.getKeyChar() >= 0x61 && e.getKeyChar() <= 0x7A) {
+			    // 영문(소문자) OK!
+				scorePnl.addInitial(e.getKeyChar());
+			} 
+			else if (e.getKeyChar() >=0x41 && e.getKeyChar() <= 0x5A) {
+			    // 영문(대문자) OK!
+				scorePnl.addInitial(e.getKeyChar());
+			}else if(e.getKeyCode()==KeyEvent.VK_BACK_SPACE){
+				scorePnl.removeInitial();
+			}else if(e.getKeyCode()==KeyEvent.VK_ENTER){
+				scorePnl.saveScore();
+			}
 		}
 	}
 	@Override
