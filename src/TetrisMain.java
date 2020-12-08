@@ -43,6 +43,7 @@ public class TetrisMain extends JFrame implements KeyListener{
 	void showFirstPnl(){
 		remove(scorePnl);
 		currentPnl=0;
+		firstPnl = new FirstPnl();
 		add(firstPnl);
 		repaint();
 		revalidate();
@@ -59,6 +60,7 @@ public class TetrisMain extends JFrame implements KeyListener{
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
+			firstPnl.chgIsRunning();
 			remove(firstPnl);
 			add(pnl);
 			repaint();
@@ -85,7 +87,6 @@ public class TetrisMain extends JFrame implements KeyListener{
 						}
 					}
 					if(e.getKeyCode()==KeyEvent.VK_ENTER){
-						System.out.println(1283972184);
 						if(pnl.startStopEnd==1){
 							pnl.startStopEnd = 2;
 							pnl.addPausePnl();

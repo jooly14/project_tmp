@@ -1,4 +1,5 @@
 import java.awt.Color;
+import java.awt.Font;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -9,11 +10,18 @@ public class NextBlock extends JPanel{
 	GamePlayPanel main;
 	JLabel btnNext[]= new JLabel[4];
 	int x = 0;
-	int x2 = 40;
+	int x2 = 50;
 	int y = 20;
+	JLabel lbl;
+	 
 	public NextBlock(GamePlayPanel main) {
 		this.main = main;
 		this.setLayout(null);
+		lbl = new JLabel("NEXT BLOCK");
+		lbl.setForeground(Color.WHITE);
+		lbl.setFont(new Font("Serif", Font.BOLD, 20));
+		lbl.setBounds(0,100, 150, 50);
+		add(lbl);
 		for (int i = 0; i < btnNext.length; i++) {
 			btnNext[i] = new JLabel();
 			btnNext[i].setOpaque(true);

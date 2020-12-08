@@ -1,20 +1,59 @@
 import java.awt.Color;
 import java.awt.Font;
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.xml.bind.SchemaOutputResolver;
-
+class ScorePnl_Thread extends Thread{
+	ScorePnl scorePnl;
+//	boolean isRunning = true;
+	int playerInsertIndex;
+	public ScorePnl_Thread(ScorePnl scorePnl, int playerInsertIndex) {
+		this.scorePnl =scorePnl;
+		this.playerInsertIndex = playerInsertIndex;
+	}
+	@Override
+	public void run() {
+		if(playerInsertIndex>4){
+				for (int i = 0; i <6;i++) {
+					for (int j = 640; j >= 0; j-=10) {
+						try {
+							Thread.sleep(10);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						scorePnl.showScore(i,j);
+					}
+				}
+			
+		}else{
+			for (int i = 0; i < 5;i++) {
+				for (int j = 640; j >= 0; j-=10) {
+					try {
+						Thread.sleep(10);
+					} catch (InterruptedException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					scorePnl.showScore(i,j);
+				}
+			}					
+		}
+		scorePnl.chgAfterShow();
+			
+	}
+//	void chgIsRunning(){
+//		isRunning = false;
+//	}
+}
 public class ScorePnl extends JPanel{
 	int point;
 	ArrayList<Integer> nums = new ArrayList<>();
@@ -23,10 +62,13 @@ public class ScorePnl extends JPanel{
 	int playerInsertIndex;
 	JLabel lbl;
 	JLabel lbl2;
+	ArrayList<JLabel> lblNum = new ArrayList<>();
+	ArrayList<JLabel> lblName= new ArrayList<>();
+	ArrayList<JLabel> lblPoint= new ArrayList<>();
 	JLabel b;
 	JLabel playerName;
 	String nameP;
-	
+	boolean afterShow;
 	TetrisMain main;
 	public ScorePnl(int point ,TetrisMain main) {
 		this.main = main;
@@ -42,14 +84,150 @@ public class ScorePnl extends JPanel{
 		lbl.setForeground(Color.red);
 		lbl.setFont(new Font("Serif", Font.BOLD, 50));
 		lbl.setBounds(230,25, 500, 100);
-		add(lbl);
 		lbl2 = new JLabel("<<  ENTER YOUR NAME  >>");
 		lbl2.setForeground(Color.white);
 		lbl2.setFont(new Font("Serif", Font.BOLD, 20));
 		lbl2.setBounds(260,25+50, 500, 100);
+		add(lbl);
 		add(lbl2);
-		showScore();
 		add(b);
+		
+		new ScorePnl_Thread(this,playerInsertIndex).start();
+//		showScore();
+	}
+	void showScore(int i, int j){
+		
+		for (int j2 = 0; j2 < lblName.size(); j2++) {
+				add(lblName.get(j2));
+		}
+		for (int j2 = 0; j2 < lblPoint.size(); j2++) {
+			add(lblPoint.get(j2));
+		}
+		for (int j2 = 0; j2 < lblNum.size(); j2++) {
+			add(lblNum.get(j2));
+		}
+		if(playerName!=null){
+			add(playerName);
+		}
+		if(playerInsertIndex>4){
+			if(i==5){
+				if(j==640){
+					lblNum.add(new JLabel(nums.get(playerInsertIndex)+""));
+					lblNum.get(lblNum.size()-1).setForeground(Color.white);
+					lblNum.get(lblNum.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*6+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					playerName = new JLabel(names.get(playerInsertIndex));
+					playerName.setForeground(Color.blue);
+					playerName.setFont(new Font("Serif", Font.BOLD, 30));
+					playerName.setBounds(350+j,80*6+40, 200, 100);
+					add(playerName);
+					lblPoint.add(new JLabel(points.get(playerInsertIndex)+""));
+					lblPoint.get(lblPoint.size()-1).setForeground(Color.white);
+					lblPoint.get(lblPoint.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*6+40, 200, 100);
+					add(lblPoint.get(lblPoint.size()-1));
+				}else{
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*6+40, 200, 100);
+					playerName.setBounds(350+j,80*6+40, 200, 100);
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*6+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					add(playerName);
+					add(lblPoint.get(lblPoint.size()-1));
+
+				}
+			}else{
+				if(j==640){
+					lblNum.add(new JLabel(nums.get(i)+""));
+					lblNum.get(lblNum.size()-1).setForeground(Color.white);
+					lblNum.get(lblNum.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*(i+1)+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					lblName.add(new JLabel(names.get(i)));
+					lblName.get(lblName.size()-1).setForeground(Color.white);
+					lblName.get(lblName.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblName.get(lblName.size()-1).setBounds(350+j,80*(i+1)+40, 200, 100);
+					add(lblName.get(lblName.size()-1));
+					lblPoint.add(new JLabel(points.get(i)+""));
+					lblPoint.get(lblPoint.size()-1).setForeground(Color.white);
+					lblPoint.get(lblPoint.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*(i+1)+40, 200, 100);
+					add(lblPoint.get(lblPoint.size()-1));
+				}else{
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*(i+1)+40, 200, 100);
+					lblName.get(lblName.size()-1).setBounds(350+j,80*(i+1)+40, 200, 100);
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*(i+1)+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					add(lblName.get(lblName.size()-1));
+					add(lblPoint.get(lblPoint.size()-1));
+
+				}
+			}
+		}else{
+			if(i==playerInsertIndex){
+				if(j==640){
+					lblNum.add(new JLabel(nums.get(playerInsertIndex)+""));
+					lblNum.get(lblNum.size()-1).setForeground(Color.white);
+					lblNum.get(lblNum.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*(i+1)+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					playerName = new JLabel(names.get(playerInsertIndex));
+					playerName.setForeground(Color.blue);
+					playerName.setFont(new Font("Serif", Font.BOLD, 30));
+					playerName.setBounds(350+j,80*(i+1)+40, 200, 100);
+					add(playerName);
+					lblPoint.add(new JLabel(points.get(playerInsertIndex)+""));
+					lblPoint.get(lblPoint.size()-1).setForeground(Color.white);
+					lblPoint.get(lblPoint.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*(i+1)+40, 200, 100);
+					add(lblPoint.get(lblPoint.size()-1));
+				}else{
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*(i+1)+40, 200, 100);
+					playerName.setBounds(350+j,80*(i+1)+40, 200, 100);
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*(i+1)+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					add(playerName);
+					add(lblPoint.get(lblPoint.size()-1));
+
+				}
+			}else{
+				if(j==640){
+					lblNum.add(new JLabel(nums.get(i)+""));
+					lblNum.get(lblNum.size()-1).setForeground(Color.white);
+					lblNum.get(lblNum.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*(i+1)+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					lblName.add(new JLabel(names.get(i)));
+					lblName.get(lblName.size()-1).setForeground(Color.white);
+					lblName.get(lblName.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblName.get(lblName.size()-1).setBounds(350+j,80*(i+1)+40, 200, 100);
+					add(lblName.get(lblName.size()-1));
+					lblPoint.add(new JLabel(points.get(i)+""));
+					lblPoint.get(lblPoint.size()-1).setForeground(Color.white);
+					lblPoint.get(lblPoint.size()-1).setFont(new Font("Serif", Font.BOLD, 30));
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*(i+1)+40, 200, 100);
+					add(lblPoint.get(lblPoint.size()-1));
+				}else{
+					lblNum.get(lblNum.size()-1).setBounds(150+j,80*(i+1)+40, 200, 100);
+					lblName.get(lblName.size()-1).setBounds(350+j,80*(i+1)+40, 200, 100);
+					lblPoint.get(lblPoint.size()-1).setBounds(550+j,80*(i+1)+40, 200, 100);
+					add(lblNum.get(lblNum.size()-1));
+					add(lblName.get(lblName.size()-1));
+					add(lblPoint.get(lblPoint.size()-1));
+				}
+			}
+		}
+		remove(lbl);
+		remove(lbl2);
+		remove(b);
+		add(lbl);
+		add(lbl2);
+		add(b);
+		repaint();
+		revalidate();
+	}
+	void chgAfterShow(){
+		afterShow = true;
 	}
 	void showScore(){
 		if(playerInsertIndex>4){
@@ -154,9 +332,9 @@ public class ScorePnl extends JPanel{
 					nums.set(i, nums.get(i)+1);
 			}
 		}
-		for (int i = 0; i < nums.size(); i++) {
-			System.out.println(nums.get(i)+" "+names.get(i)+" "+points.get(i));
-		}
+//		for (int i = 0; i < nums.size(); i++) {
+//			System.out.println(nums.get(i)+" "+names.get(i)+" "+points.get(i));
+//		}
 	}
 	void readFile(){
 		FileReader fr = null;
@@ -193,78 +371,91 @@ public class ScorePnl extends JPanel{
 		}
 	}
 	void addInitial(char c){
-		if(playerName.getText().length()<3){
-			playerName.setText(playerName.getText()+c);
-		}
-		if(playerName.getText().length()==3){
-			nameP = playerName.getText();
-			lbl2 = new JLabel("<<  PRESS ENTER TO SAVE  >>");
-			lbl2.setForeground(Color.white);
-			lbl2.setFont(new Font("Serif", Font.BOLD, 20));
-			lbl2.setBounds(240,25+50, 500, 100);
-			removeAll();
-			add(lbl2);
-			add(lbl);
-			showScore();
-			playerName.setText(nameP);
-			add(b);
-			repaint();
-			revalidate();
+		if(afterShow){
+			if(playerName.getText().length()<3){
+				playerName.setText(playerName.getText()+c);
+			}
+			if(playerName.getText().length()==3){
+				nameP = playerName.getText();
+				lbl2 = new JLabel("<<  PRESS ENTER TO SAVE  >>");
+				lbl2.setForeground(Color.white);
+				lbl2.setFont(new Font("Serif", Font.BOLD, 20));
+				lbl2.setBounds(240,25+50, 500, 100);
+				removeAll();
+				add(lbl2);
+				add(lbl);
+				showScore();
+				playerName.setText(nameP);
+				add(b);
+				repaint();
+				revalidate();
+			}
 		}
 	}
 	void removeInitial(){
-		if(playerName.getText().length()==3){
-			lbl2 = new JLabel("<<  ENTER YOUR NAME  >>");
-			lbl2.setForeground(Color.white);
-			lbl2.setFont(new Font("Serif", Font.BOLD, 20));
-			lbl2.setBounds(260,25+50, 500, 100);
-			removeAll();
-			add(lbl2);
-			add(lbl);
-			showScore();
-			playerName.setText(nameP);
-			add(b);
-			repaint();
-			revalidate();
-		}
-		if(playerName.getText().length()!=0){
-			playerName.setText(playerName.getText().substring(0, playerName.getText().length()-1));
+		if(afterShow){
+			if(playerName.getText().length()==3){
+				lbl2 = new JLabel("<<  ENTER YOUR NAME  >>");
+				lbl2.setForeground(Color.white);
+				lbl2.setFont(new Font("Serif", Font.BOLD, 20));
+				lbl2.setBounds(260,25+50, 500, 100);
+				removeAll();
+				add(lbl2);
+				add(lbl);
+				showScore();
+				playerName.setText(nameP);
+				add(b);
+				repaint();
+				revalidate();
+			}
+			if(playerName.getText().length()!=0){
+				playerName.setText(playerName.getText().substring(0, playerName.getText().length()-1));
+			}
+			
 		}
 	}
 	void saveScore(){
-		if(playerName.getText().length()==3){
-			//저장
-			FileWriter fw = null;
-			PrintWriter pw = null;
-			
-			try {
-				fw = new FileWriter("score.txt");
-				pw = new PrintWriter(fw);
-				for (int j = 0; j < nums.size(); j++) {
-					if(j==playerInsertIndex){
-						pw.println(nums.get(j)+"/"+playerName.getText()+"/"+points.get(j));
-					}else{
-						pw.println(nums.get(j)+"/"+names.get(j)+"/"+points.get(j));
-					}
-				}
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}finally {
+		if(afterShow){
+			if(playerName.getText().length()==3){
+				//저장
+				FileWriter fw = null;
+				PrintWriter pw = null;
+				
 				try {
-					if(pw!=null){
-						pw.close();
-					}
-					if(fw!=null){
-							fw.close();
+					fw = new FileWriter("score.txt");
+					pw = new PrintWriter(fw);
+					for (int j = 0; j < nums.size(); j++) {
+						if(j==playerInsertIndex){
+							pw.println(nums.get(j)+"/"+playerName.getText()+"/"+points.get(j));
+						}else{
+							pw.println(nums.get(j)+"/"+names.get(j)+"/"+points.get(j));
+						}
 					}
 				} catch (IOException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
+				}finally {
+					try {
+						if(pw!=null){
+							pw.close();
+						}
+						if(fw!=null){
+							fw.close();
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 				}
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				main.showFirstPnl();
 			}
 			
-			main.showFirstPnl();
 		}
 	}
 }
