@@ -57,7 +57,7 @@ class NewBlock extends Thread{
 }
 class TimeCounter extends Thread{
 	GamePlayPanel main;
-	int timeLimit = 1000*60*1;
+	int timeLimit = 1000*60*3;
 	long limit;
 	long timeRemaining;
 	JLabel lbl;
@@ -118,7 +118,7 @@ class TimeCounter extends Thread{
 					lbl.setText(minutes+":"+seconds);
 				}
 	
-				if(timeRemaining<0){
+				if(timeRemaining<=0){
 //					lbl.setText("TIME OUT");
 					main.startStopEnd =3;	
 					main.addEndPnl(1);
@@ -146,7 +146,6 @@ class GamePnl extends JPanel{
 	public GamePnl() {
 		setLayout(null);
 		setBorder(BorderFactory.createLineBorder(Color.BLACK));
-		
 	}
 }
 public class GamePlayPanel extends JPanel{
@@ -157,6 +156,7 @@ public class GamePlayPanel extends JPanel{
 	
 	CycleManualPnl cycleManualPnl;
 	
+	boolean twice = false;
 	boolean yes = true;
 	boolean keyEventOK = true;
 	int startStopEnd = 1;
@@ -367,33 +367,68 @@ public class GamePlayPanel extends JPanel{
 		keyEventOK = true;
 	}
 	synchronized void stackCurrentBlock(){
-
-		for(int i=0;i<stackedBlock.length;i++){
-			for(int j=0;j<stackedBlock[0].length;j++){
-				if(stackedBlock[i][j]!=null){
-					for(int k =0;k<btnNew.length;k++){
-						if(btnNew[k].getX()==stackedBlock[i][j].getX()&&btnNew[k].getY()+20==stackedBlock[i][j].getY()){
-							t.chgIsRunning();
-							spbar_t.chgIsRunning();
-							addStackedBlock();
-							for(int l =0;l<btnNew.length;l++){
-								if(btnNew[k].getY()==20){
-									counter.chgIsRunning();
-									return;
-								}
-							}
-							
-							return;
-						}
-					}
+		boolean nop = false;
+		for (int i = 0; i < btnNew.length; i++) {
+			if(!twice){
+				if(btnNew[i].getY()==580){
+					twice = true;
+					break;
+				}else if(stackedBlock[btnNew[i].getX()/20][btnNew[i].getY()/20+1]!=null){
+					twice = true;
+					break;
 				}
+			}else{
+				if(btnNew[i].getY()==580){
+					t.chgIsRunning();
+					spbar_t.chgIsRunning();
+					addStackedBlock();
+					twice= false;
+					nop = false;
+					break;
+				}else if(stackedBlock[btnNew[i].getX()/20][btnNew[i].getY()/20+1]!=null){
+					t.chgIsRunning();
+					spbar_t.chgIsRunning();
+					addStackedBlock();
+					twice= false;
+					nop = false;
+					break;
+				}else{
+					nop = true;
+				}
+				
+				
 			}
 		}
-		for(int i=0;i<btnNew.length;i++){
-			if(btnNew[i].getY()==580){
-				t.chgIsRunning();
-				spbar_t.chgIsRunning();
-				addStackedBlock();
+		if(nop){
+			twice = false;
+		}
+//
+//		for(int i=0;i<stackedBlock.length;i++){
+//			for(int j=0;j<stackedBlock[0].length;j++){
+//				if(stackedBlock[i][j]!=null){
+//					for(int k =0;k<btnNew.length;k++){
+//						if(btnNew[k].getX()==stackedBlock[i][j].getX()&&btnNew[k].getY()+20==stackedBlock[i][j].getY()){
+//							t.chgIsRunning();
+//							spbar_t.chgIsRunning();
+//							addStackedBlock();
+//							for(int l =0;l<btnNew.length;l++){
+//								if(btnNew[k].getY()==20){
+//									counter.chgIsRunning();
+//									return;
+//								}
+//							}
+//							
+//							return;
+//						}
+//					}
+//				}
+//			}
+//		}
+//		for(int i=0;i<btnNew.length;i++){
+//			if(btnNew[i].getY()==580){
+//				t.chgIsRunning();
+//				spbar_t.chgIsRunning();
+//				addStackedBlock();
 //				try {
 //					Thread.sleep(100);
 //				} catch (InterruptedException e) {
@@ -402,9 +437,9 @@ public class GamePlayPanel extends JPanel{
 //				}
 //				t = new NewBlock(this,speed);
 //				t.start();
-				break;
-			}
-		}
+//				break;
+//			}
+//		}
 
 	}
 	synchronized void addStackedBlock(){

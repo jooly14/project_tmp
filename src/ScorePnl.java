@@ -11,6 +11,49 @@ import java.util.ArrayList;
 import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+class EnterName_Thread extends Thread{
+	boolean isRunning = true;
+	boolean show = true;
+	ScorePnl scorePnl;
+	JLabel playerName;
+	public EnterName_Thread(ScorePnl scorePnl, JLabel playerName) {
+		this.scorePnl = scorePnl;
+		this.playerName = playerName;
+	}
+	@Override
+	public void run() {
+		while (isRunning) {
+			if(playerName.getText().length()!=3){
+				if(show){
+					scorePnl.removeLineLbl();
+					show = false;
+				}else{
+					scorePnl.addLineLbl();
+					show = true;
+				}
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}else{
+				
+				try {
+					Thread.sleep(500);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	void chgIsRunning(){
+		isRunning = false;
+		
+	}
+}
 class ScorePnl_Thread extends Thread{
 	ScorePnl scorePnl;
 //	boolean isRunning = true;
@@ -33,7 +76,6 @@ class ScorePnl_Thread extends Thread{
 						scorePnl.showScore(i,j);
 					}
 				}
-			
 		}else{
 			for (int i = 0; i < 5;i++) {
 				for (int j = 640; j >= 0; j-=10) {
@@ -69,6 +111,10 @@ public class ScorePnl extends JPanel{
 	JLabel playerName;
 	boolean afterShow;
 	TetrisMain main;
+	
+	JLabel line;
+	EnterName_Thread enterName_Thread;
+	
 	public ScorePnl(int point ,TetrisMain main) {
 		this.main = main;
 		this.point = point;
@@ -96,7 +142,13 @@ public class ScorePnl extends JPanel{
 		add(lbl);
 		add(lbl2);
 		
+		line = new JLabel();
+		line.setOpaque(true);
+		line.setBackground(Color.WHITE);
+		line.setBounds(0,0,14,2);
+		
 		new ScorePnl_Thread(this,playerInsertIndex).start();
+		
 	}
 	void showScore(int i, int j){
 		
@@ -231,6 +283,20 @@ public class ScorePnl extends JPanel{
 	}
 	void chgAfterShow(){
 		afterShow = true;
+		line.setLocation(playerName.getX(), playerName.getY()+70);
+		add(line);
+		enterName_Thread = new EnterName_Thread(this, playerName);
+		enterName_Thread.start();
+	}
+	void addLineLbl(){
+		add(line);
+		repaint();
+		revalidate();
+	}
+	void removeLineLbl(){
+		remove(line);
+		repaint();
+		revalidate();
 	}
 //	void showScore(){
 //		if(playerInsertIndex>4){
@@ -377,8 +443,10 @@ public class ScorePnl extends JPanel{
 		if(afterShow){
 			if(playerName.getText().length()<3){
 				playerName.setText(playerName.getText()+c);
+				line.setLocation(line.getX()+25, line.getY());
 			}
 			if(playerName.getText().length()==3){
+				remove(line);
 				remove(lbl2);
 				add(lbl3);
 				repaint();
@@ -389,6 +457,7 @@ public class ScorePnl extends JPanel{
 	void removeInitial(){
 		if(afterShow){
 			if(playerName.getText().length()==3){
+				add(line);
 				remove(lbl3);
 				add(lbl2);
 				repaint();
@@ -396,6 +465,7 @@ public class ScorePnl extends JPanel{
 			}
 			if(playerName.getText().length()!=0){
 				playerName.setText(playerName.getText().substring(0, playerName.getText().length()-1));
+				line.setLocation(line.getX()-25, line.getY());
 			}
 			
 		}

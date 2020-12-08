@@ -11,17 +11,21 @@ import javax.swing.JPanel;
 
 public class TetrisMain extends JFrame implements KeyListener{
 	GamePlayPanel pnl;
-	FirstPnl firstPnl;
+	FirstPnlParentPnl firstPnlParentPnl;
 	boolean keyOk =true;
 	ScorePnlParentPnl scorePnlParentPnl;
 	ScorePnl scorePnl;
 	int currentPnl = 0;
+	
 	public TetrisMain() {
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setSize(800,868);
 		setLayout(null);
-		firstPnl = new FirstPnl();
-		add(firstPnl);
+		
+		
+		
+		firstPnlParentPnl = new FirstPnlParentPnl();
+		add(firstPnlParentPnl);
 		this.addKeyListener(this);
 		this.setFocusable(true);
 		this.requestFocus();
@@ -45,8 +49,8 @@ public class TetrisMain extends JFrame implements KeyListener{
 	void showFirstPnl(){
 		remove(scorePnlParentPnl);
 		currentPnl=0;
-		firstPnl = new FirstPnl();
-		add(firstPnl);
+		firstPnlParentPnl = new FirstPnlParentPnl();
+		add(firstPnlParentPnl);
 		repaint();
 		revalidate();
 	}
@@ -62,8 +66,8 @@ public class TetrisMain extends JFrame implements KeyListener{
 				// TODO Auto-generated catch block
 				e1.printStackTrace();
 			}
-			firstPnl.chgIsRunning();
-			remove(firstPnl);
+			firstPnlParentPnl.chgIsRunning();
+			remove(firstPnlParentPnl);
 			add(pnl);
 			repaint();
 			revalidate();
@@ -104,7 +108,7 @@ public class TetrisMain extends JFrame implements KeyListener{
 		}else if(currentPnl ==2){
 			if (e.getKeyChar() >= 0x61 && e.getKeyChar() <= 0x7A) {
 			    // 영문(소문자) OK!
-				scorePnl.addInitial(e.getKeyChar());
+				scorePnl.addInitial((char)(e.getKeyChar()-0x20));
 			} 
 			else if (e.getKeyChar() >=0x41 && e.getKeyChar() <= 0x5A) {
 			    // 영문(대문자) OK!
