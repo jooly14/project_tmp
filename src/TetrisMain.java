@@ -13,6 +13,7 @@ public class TetrisMain extends JFrame implements KeyListener{
 	GamePlayPanel pnl;
 	FirstPnl firstPnl;
 	boolean keyOk =true;
+	ScorePnlParentPnl scorePnlParentPnl;
 	ScorePnl scorePnl;
 	int currentPnl = 0;
 	public TetrisMain() {
@@ -32,16 +33,17 @@ public class TetrisMain extends JFrame implements KeyListener{
 		new TetrisMain();
 	}
 	void showScore(int point){
-		scorePnl = new ScorePnl(point, this);
+		scorePnlParentPnl = new ScorePnlParentPnl(point, this);
+		scorePnl = scorePnlParentPnl.getChildPnl();
 		currentPnl=2;
 		remove(pnl);
-		add(scorePnl);
+		add(scorePnlParentPnl);
 		repaint();
 		revalidate();
 		
 	}
 	void showFirstPnl(){
-		remove(scorePnl);
+		remove(scorePnlParentPnl);
 		currentPnl=0;
 		firstPnl = new FirstPnl();
 		add(firstPnl);

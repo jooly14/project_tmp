@@ -62,12 +62,11 @@ public class ScorePnl extends JPanel{
 	int playerInsertIndex;
 	JLabel lbl;
 	JLabel lbl2;
+	JLabel lbl3;
 	ArrayList<JLabel> lblNum = new ArrayList<>();
 	ArrayList<JLabel> lblName= new ArrayList<>();
 	ArrayList<JLabel> lblPoint= new ArrayList<>();
-	JLabel b;
 	JLabel playerName;
-	String nameP;
 	boolean afterShow;
 	TetrisMain main;
 	public ScorePnl(int point ,TetrisMain main) {
@@ -75,10 +74,16 @@ public class ScorePnl extends JPanel{
 		this.point = point;
 		setLayout(null);
 		setBounds(0,0, 800, 868);
-		b = new JLabel(new ImageIcon("menu.png"));
-		b.setBounds(-10,0, 800, 835);
+		setOpaque(false);
 		
 		checkScore();
+		
+		
+		
+		lbl3 = new JLabel("<<  PRESS ENTER TO SAVE  >>");
+		lbl3.setForeground(Color.white);
+		lbl3.setFont(new Font("Serif", Font.BOLD, 20));
+		lbl3.setBounds(240,25+50, 500, 100);
 		
 		lbl = new JLabel("BEST SCORE");
 		lbl.setForeground(Color.red);
@@ -90,25 +95,23 @@ public class ScorePnl extends JPanel{
 		lbl2.setBounds(260,25+50, 500, 100);
 		add(lbl);
 		add(lbl2);
-		add(b);
 		
 		new ScorePnl_Thread(this,playerInsertIndex).start();
-//		showScore();
 	}
 	void showScore(int i, int j){
 		
-		for (int j2 = 0; j2 < lblName.size(); j2++) {
-				add(lblName.get(j2));
-		}
-		for (int j2 = 0; j2 < lblPoint.size(); j2++) {
-			add(lblPoint.get(j2));
-		}
-		for (int j2 = 0; j2 < lblNum.size(); j2++) {
-			add(lblNum.get(j2));
-		}
-		if(playerName!=null){
-			add(playerName);
-		}
+//		for (int j2 = 0; j2 < lblName.size(); j2++) {
+//				add(lblName.get(j2));
+//		}
+//		for (int j2 = 0; j2 < lblPoint.size(); j2++) {
+//			add(lblPoint.get(j2));
+//		}
+//		for (int j2 = 0; j2 < lblNum.size(); j2++) {
+//			add(lblNum.get(j2));
+//		}
+//		if(playerName!=null){
+//			add(playerName);
+//		}
 		if(playerInsertIndex>4){
 			if(i==5){
 				if(j==640){
@@ -217,92 +220,92 @@ public class ScorePnl extends JPanel{
 				}
 			}
 		}
-		remove(lbl);
-		remove(lbl2);
-		remove(b);
-		add(lbl);
-		add(lbl2);
-		add(b);
+//		remove(lbl);
+//		remove(lbl2);
+//		remove(b);
+//		add(lbl);
+//		add(lbl2);
+//		add(b);
 		repaint();
 		revalidate();
 	}
 	void chgAfterShow(){
 		afterShow = true;
 	}
-	void showScore(){
-		if(playerInsertIndex>4){
-			for (int i = 0; i < 5; i++) {
-				lbl2 = new JLabel(nums.get(i)+"");
-				lbl2.setForeground(Color.white);
-				lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-				lbl2.setBounds(150,80*(i+1)+40, 200, 100);
-				add(lbl2);
-				lbl2 = new JLabel(names.get(i));
-				lbl2.setForeground(Color.white);
-				lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-				lbl2.setBounds(350,80*(i+1)+40, 200, 100);
-				add(lbl2);
-				lbl2 = new JLabel(points.get(i)+"");
-				lbl2.setForeground(Color.white);
-				lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-				lbl2.setBounds(550,80*(i+1)+40, 200, 100);
-				add(lbl2);
-			}
-			lbl2 = new JLabel(nums.get(playerInsertIndex)+"");
-			lbl2.setForeground(Color.white);
-			lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-			lbl2.setBounds(150,80*6+40, 200, 100);
-			add(lbl2);
-			playerName = new JLabel(names.get(playerInsertIndex));
-			playerName.setForeground(Color.blue);
-			playerName.setFont(new Font("Serif", Font.BOLD, 30));
-			playerName.setBounds(350,80*6+40, 200, 100);
-			add(playerName);
-			lbl2 = new JLabel(points.get(playerInsertIndex)+"");
-			lbl2.setForeground(Color.white);
-			lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-			lbl2.setBounds(550,80*6+40, 200, 100);
-			add(lbl2);
-		}else{
-			for (int i = 0; i < 5; i++) {
-				if(i==playerInsertIndex){
-					lbl2 = new JLabel(nums.get(i)+"");
-					lbl2.setForeground(Color.white);
-					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-					lbl2.setBounds(150,80*(i+1)+40, 200, 100);
-					add(lbl2);
-					playerName = new JLabel(names.get(i));
-					playerName.setForeground(Color.blue);
-					playerName.setFont(new Font("Serif", Font.BOLD, 30));
-					playerName.setBounds(350,80*(i+1)+40, 200, 100);
-					add(playerName);
-					lbl2 = new JLabel(points.get(i)+"");
-					lbl2.setForeground(Color.white);
-					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-					lbl2.setBounds(550,80*(i+1)+40, 200, 100);
-					add(lbl2);
-				}else{
-					lbl2 = new JLabel(nums.get(i)+"");
-					lbl2.setForeground(Color.white);
-					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-					lbl2.setBounds(150,80*(i+1)+40, 200, 100);
-					add(lbl2);
-					lbl2 = new JLabel(names.get(i));
-					lbl2.setForeground(Color.white);
-					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-					lbl2.setBounds(350,80*(i+1)+40, 200, 100);
-					add(lbl2);
-					lbl2 = new JLabel(points.get(i)+"");
-					lbl2.setForeground(Color.white);
-					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
-					lbl2.setBounds(550,80*(i+1)+40, 200, 100);
-					add(lbl2);
-					
-				}
-			}
-			
-		}
-	}
+//	void showScore(){
+//		if(playerInsertIndex>4){
+//			for (int i = 0; i < 5; i++) {
+//				lbl2 = new JLabel(nums.get(i)+"");
+//				lbl2.setForeground(Color.white);
+//				lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//				lbl2.setBounds(150,80*(i+1)+40, 200, 100);
+//				add(lbl2);
+//				lbl2 = new JLabel(names.get(i));
+//				lbl2.setForeground(Color.white);
+//				lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//				lbl2.setBounds(350,80*(i+1)+40, 200, 100);
+//				add(lbl2);
+//				lbl2 = new JLabel(points.get(i)+"");
+//				lbl2.setForeground(Color.white);
+//				lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//				lbl2.setBounds(550,80*(i+1)+40, 200, 100);
+//				add(lbl2);
+//			}
+//			lbl2 = new JLabel(nums.get(playerInsertIndex)+"");
+//			lbl2.setForeground(Color.white);
+//			lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//			lbl2.setBounds(150,80*6+40, 200, 100);
+//			add(lbl2);
+//			playerName = new JLabel(names.get(playerInsertIndex));
+//			playerName.setForeground(Color.blue);
+//			playerName.setFont(new Font("Serif", Font.BOLD, 30));
+//			playerName.setBounds(350,80*6+40, 200, 100);
+//			add(playerName);
+//			lbl2 = new JLabel(points.get(playerInsertIndex)+"");
+//			lbl2.setForeground(Color.white);
+//			lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//			lbl2.setBounds(550,80*6+40, 200, 100);
+//			add(lbl2);
+//		}else{
+//			for (int i = 0; i < 5; i++) {
+//				if(i==playerInsertIndex){
+//					lbl2 = new JLabel(nums.get(i)+"");
+//					lbl2.setForeground(Color.white);
+//					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//					lbl2.setBounds(150,80*(i+1)+40, 200, 100);
+//					add(lbl2);
+//					playerName = new JLabel(names.get(i));
+//					playerName.setForeground(Color.blue);
+//					playerName.setFont(new Font("Serif", Font.BOLD, 30));
+//					playerName.setBounds(350,80*(i+1)+40, 200, 100);
+//					add(playerName);
+//					lbl2 = new JLabel(points.get(i)+"");
+//					lbl2.setForeground(Color.white);
+//					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//					lbl2.setBounds(550,80*(i+1)+40, 200, 100);
+//					add(lbl2);
+//				}else{
+//					lbl2 = new JLabel(nums.get(i)+"");
+//					lbl2.setForeground(Color.white);
+//					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//					lbl2.setBounds(150,80*(i+1)+40, 200, 100);
+//					add(lbl2);
+//					lbl2 = new JLabel(names.get(i));
+//					lbl2.setForeground(Color.white);
+//					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//					lbl2.setBounds(350,80*(i+1)+40, 200, 100);
+//					add(lbl2);
+//					lbl2 = new JLabel(points.get(i)+"");
+//					lbl2.setForeground(Color.white);
+//					lbl2.setFont(new Font("Serif", Font.BOLD, 30));
+//					lbl2.setBounds(550,80*(i+1)+40, 200, 100);
+//					add(lbl2);
+//					
+//				}
+//			}
+//			
+//		}
+//	}
 	void checkScore(){
 		readFile();
 		playerInsertIndex = nums.size();
@@ -376,17 +379,8 @@ public class ScorePnl extends JPanel{
 				playerName.setText(playerName.getText()+c);
 			}
 			if(playerName.getText().length()==3){
-				nameP = playerName.getText();
-				lbl2 = new JLabel("<<  PRESS ENTER TO SAVE  >>");
-				lbl2.setForeground(Color.white);
-				lbl2.setFont(new Font("Serif", Font.BOLD, 20));
-				lbl2.setBounds(240,25+50, 500, 100);
-				removeAll();
-				add(lbl2);
-				add(lbl);
-				showScore();
-				playerName.setText(nameP);
-				add(b);
+				remove(lbl2);
+				add(lbl3);
 				repaint();
 				revalidate();
 			}
@@ -395,16 +389,8 @@ public class ScorePnl extends JPanel{
 	void removeInitial(){
 		if(afterShow){
 			if(playerName.getText().length()==3){
-				lbl2 = new JLabel("<<  ENTER YOUR NAME  >>");
-				lbl2.setForeground(Color.white);
-				lbl2.setFont(new Font("Serif", Font.BOLD, 20));
-				lbl2.setBounds(260,25+50, 500, 100);
-				removeAll();
+				remove(lbl3);
 				add(lbl2);
-				add(lbl);
-				showScore();
-				playerName.setText(nameP);
-				add(b);
 				repaint();
 				revalidate();
 			}
