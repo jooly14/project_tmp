@@ -30,6 +30,7 @@ class EnterName_Thread extends Thread{
 		while (isRunning) {
 			if(playerName.getText().length()!=3){	//playername가 3글자가 아닌 경우에만 깜빡거림
 				if(show){
+					
 					scorePnl.removeLineLbl();
 					show = false;
 				}else{
@@ -374,7 +375,8 @@ public class ScorePnl extends JPanel{
 			if(playerName.getText().length()<3){	//3글자 보다 적은 경우
 				playerName.setText(playerName.getText()+c);
 				line.setLocation(line.getX()+25, line.getY());
-			}else if(playerName.getText().length()==3){	//3글자인 경우
+			}
+			if(playerName.getText().length()==3){	//3글자인 경우
 				remove(line);
 				remove(lbl2);
 				add(lbl3);
