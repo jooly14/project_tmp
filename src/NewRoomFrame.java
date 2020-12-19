@@ -3,17 +3,24 @@ import java.awt.Insets;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 
@@ -49,24 +56,164 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 	ChatClientPrac chatClientPrac;
 	public NewRoomFrame(ChatClientPrac chatClientPrac, String roomName) {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setLocation(820, 0);
 		setSize(620,600);
 		
 		this.roomName = roomName;
 		this.chatClientPrac = chatClientPrac;
 		
-		modelRoom = new DefaultTableModel(contentRoom, headerRoom);
+		modelRoom = new DefaultTableModel(contentRoom, headerRoom){
+			public boolean isCellEditable(int rowIndex, int colIndex){
+				return false;
+			}
+		};
 		tableRoom = new JTable(modelRoom);
+		tableRoom.getTableHeader().setReorderingAllowed(false);
+		tableRoom.getTableHeader().setResizingAllowed(false);
 		pane_tableRoom = new JScrollPane(tableRoom);
 		pane_tableRoom.setBounds(500, 90, 100, 400);
 		
-		modelAll = new DefaultTableModel(contentAll, headerAll);
+		modelAll = new DefaultTableModel(contentAll, headerAll){
+			public boolean isCellEditable(int rowIndex, int colIndex){
+				return false;
+			}
+		};
 		tableAll = new JTable(modelAll);
+		tableAll.getTableHeader().setReorderingAllowed(false);
+		tableAll.getTableHeader().setResizingAllowed(false);
 		pane_tableAll = new JScrollPane(tableAll);
 		pane_tableAll.setBounds(500, 90, 100, 400);
+		JPopupMenu popupMenu1 = new JPopupMenu();	//전체 사용자 테이블에서 사용
+		JMenuItem item1_1 = new JMenuItem("귓속말 차단");
+		JMenuItem item1_2 = new JMenuItem("귓속말 차단 해제");
+		JPopupMenu popupMenu2 = new JPopupMenu();	//대화방 사용자 테이블에서 사용
+		JMenuItem item2_1 = new JMenuItem("귓속말 차단");
+		JMenuItem item2_2 = new JMenuItem("귓속말 차단 해제");
+		JMenuItem item2_3 = new JMenuItem("방장 변경");
 		
-		modelOwner = new DefaultTableModel(contentOwner, headerOwner);
+		item1_1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				int okCancelChk = JOptionPane.showConfirmDialog(null, tableAll.getValueAt(tableAll.getSelectedRow(), 0)+"님의 귓속말을 차단하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
+				if(okCancelChk==JOptionPane.OK_OPTION){
+					chatClientPrac.getBlockNameList().add(tableAll.getValueAt(tableAll.getSelectedRow(), 0).toString());
+					JOptionPane.showMessageDialog(null, "귓속말 차단되었습니다.");
+				}
+			}
+		});
+		item1_2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int okCancelChk = JOptionPane.showConfirmDialog(null, tableAll.getValueAt(tableAll.getSelectedRow(), 0)+"님의 귓속말 차단을 해제하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
+				if(okCancelChk==JOptionPane.OK_OPTION){
+					chatClientPrac.getBlockNameList().remove(tableAll.getValueAt(tableAll.getSelectedRow(), 0).toString());
+					JOptionPane.showMessageDialog(null, "귓속말 차단 해제되었습니다.");
+				}
+			}
+		});
+		popupMenu1.addPopupMenuListener(new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				// TODO Auto-generated method stub
+				if(tableAll.getSelectedRow()!=-1){
+					if(chatClientPrac.getBlockNameList().contains(tableAll.getValueAt(tableAll.getSelectedRow(), 0))){
+						popupMenu1.remove(item1_1);
+						popupMenu1.add(item1_2);
+					}else{
+						popupMenu1.remove(item1_2);
+						popupMenu1.add(item1_1);
+					}
+				}else{
+					popupMenu1.setVisible(false);
+				}
+			}
+			
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+			public void popupMenuCanceled(PopupMenuEvent e) {}
+		});
+		item2_1.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				// TODO Auto-generated method stub
+				int okCancelChk = JOptionPane.showConfirmDialog(null, tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+"님의 귓속말을 차단하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
+				if(okCancelChk==JOptionPane.OK_OPTION){
+					chatClientPrac.getBlockNameList().add(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
+					JOptionPane.showMessageDialog(null, "귓속말 차단되었습니다.");
+				}
+			}
+		});
+		item2_2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int okCancelChk = JOptionPane.showConfirmDialog(null, tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+"님의 귓속말 차단을 해제하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
+				if(okCancelChk==JOptionPane.OK_OPTION){
+					chatClientPrac.getBlockNameList().remove(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
+					JOptionPane.showMessageDialog(null, "귓속말 차단 해제되었습니다.");
+				}
+			}
+		});
+		item2_3.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				int chkOkCancel = JOptionPane.showConfirmDialog(null, tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+"님에게 방장 자격을 주시겠습니까?", "",  JOptionPane.OK_CANCEL_OPTION);
+				if(chkOkCancel == JOptionPane.OK_OPTION){
+					chatClientPrac.chatInRoom("/ca "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0),roomNum);
+				}
+			}
+		});
+		popupMenu2.addPopupMenuListener(new PopupMenuListener() {
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+				// TODO Auto-generated method stub
+				if(tableRoom.getSelectedRow()!=-1){
+					if(chatClientPrac.getBlockNameList().contains(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0))){
+						popupMenu2.remove(item2_1);
+						popupMenu2.add(item2_2);
+					}else{
+						popupMenu2.remove(item2_2);
+						popupMenu2.add(item2_1);
+					}
+					if(modelOwner.getValueAt(0, 0).equals(getTitle().split(" ")[6])){
+						popupMenu2.add(item2_3);
+					}else{
+						popupMenu2.remove(item2_3);
+					}	
+					
+				}else{
+					popupMenu2.setVisible(false);
+				}
+			}
+			
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
+			public void popupMenuCanceled(PopupMenuEvent e) {}
+		});
+		
+		tableAll.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				tableAll.setRowSelectionInterval(tableAll.rowAtPoint(e.getPoint()), tableAll.rowAtPoint(e.getPoint()));
+			}
+		});
+		tableRoom.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mousePressed(MouseEvent e) {
+				tableRoom.setRowSelectionInterval(tableRoom.rowAtPoint(e.getPoint()), tableRoom.rowAtPoint(e.getPoint()));
+			}
+		});
+		
+		
+		
+		tableAll.setComponentPopupMenu(popupMenu1);
+		tableRoom.setComponentPopupMenu(popupMenu2);
+		
+		modelOwner = new DefaultTableModel(contentOwner, headerOwner){
+			public boolean isCellEditable(int rowIndex, int colIndex){
+				return false;
+			}
+		};
 		tableOwner = new JTable(modelOwner);
+		tableOwner.getTableHeader().setReorderingAllowed(false);
+		tableOwner.getTableHeader().setResizingAllowed(false);
 		pane_tableOwner = new JScrollPane(tableOwner);
 		pane_tableOwner.setBounds(500, 40, 100, 50);
 		add(pane_tableOwner);

@@ -6,14 +6,20 @@ import java.util.Vector;
 public class Room {
 	HashMap<String,PrintWriter> Participants;
 	String owner;
-	String name;
+	String name;	//πÊ¿Ã∏ß
+	Vector<String> banned;
 	public Room(String owner,PrintWriter pw,String name) {
 		Participants = new HashMap<>();
 		Participants.put(owner,pw);
 		this.owner = owner;
 		this.name = name;
+		banned = new Vector<>();
 	}
 	
+	public Vector<String> getBanned() {
+		return banned;
+	}
+
 	public String getOwner() {
 		return owner;
 	}

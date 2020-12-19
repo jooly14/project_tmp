@@ -9,7 +9,6 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
 
@@ -41,6 +40,8 @@ public class ChatServerPrac extends JFrame implements ActionListener{
 	HashMap<String, PrintWriter> map;	//client의 id와 printwriter를 가지고 있다.
 	
 	int roomNum;
+	
+	
 	//초기화
 	public ChatServerPrac() {
 		init();	
@@ -79,11 +80,18 @@ public class ChatServerPrac extends JFrame implements ActionListener{
 		pnl.add(tf);
 		
 		
-		modelAll = new DefaultTableModel(contentAll,headerAll);	//전체 사용자 목록을 보여줌
+		modelAll = new DefaultTableModel(contentAll,headerAll){
+			public boolean isCellEditable(int rowIndex, int colIndex){
+				return false;
+			}
+		};	//전체 사용자 목록을 보여줌
 		tableAll = new JTable(modelAll);
+		tableAll.getTableHeader().setReorderingAllowed(false);
+		tableAll.getTableHeader().setResizingAllowed(false);
 		JScrollPane pane_tableAll = new JScrollPane(tableAll);
 		pane_tableAll.setBounds(400, 0, 200, 360);
 		pnl.add(pane_tableAll);
+		
 		
 		Image img = Toolkit.getDefaultToolkit().getImage("big6.png");
 		img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -97,9 +105,9 @@ public class ChatServerPrac extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		String[] split = tf.getText().split(" ");
 		if(split[0].equals("/w")){
-			ta.append("[공지 (귓속말:"+split[1]+"에게)]  : "+tf.getText().substring(tf.getText().indexOf(" ", 3)+1)+"\n");
+			ta.append("[귓속말:"+split[1]+"에게] [공지]  : "+tf.getText().substring(tf.getText().indexOf(" ", 3)+1)+"\n");
 			ta.setCaretPosition(ta.getDocument().getLength());
-			map.get(split[1]).println("[공지 (귓속말)]  : "+tf.getText().substring(tf.getText().indexOf(" ", 3)+1)+" /server");
+			map.get(split[1]).println("[귓속말] [공지]  : "+tf.getText().substring(tf.getText().indexOf(" ", 3)+1)+" /server");
 		}else{
 			ta.append("[공지] : "+tf.getText()+"\n");
 			ta.setCaretPosition(ta.getDocument().getLength());
@@ -201,9 +209,25 @@ class serverThread extends Thread{
 					if(split[split.length-1].equals("/room")){	//대기실에서 보낸 메시지
 						if(split[0].equals("/createRoom")){		//새로운 방 생성
 							createNewRoom(split);				
+						}else if(split[0].equals("/w")){
+							map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2])));
 						}else{
 							broadcast(id+" : "+msg);	//대기실에서 메시지 보내기
 							ta.append(id+" : "+msg+"\n");
+						}
+					}else if(split[0].equals("/ban")){
+						if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){
+							for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[3]).getParticipants().entrySet()){
+								if(entry.getKey().equals(split[1])){
+									entry.getValue().println("/banned "+entry.getKey()+" /room "+split[3]);
+								}else{
+									entry.getValue().println(msg);
+								}
+							}
+							chatServerPrac.getRoomMap().get(split[3]).getParticipants().remove(split[1]);
+							chatServerPrac.getRoomMap().get(split[3]).getBanned().add(split[1]);
+						}else{
+							pw.println("방장만 강퇴 기능을 사용하실 수 있습니다. /room "+split[3]);
 						}
 					}else if(split[0].equals("/exitRoom")){		//대화방에서 나갈때
 						if(chatServerPrac.getRoomMap().get(split[1]).getOwner().equals(id)&&chatServerPrac.getRoomMap().get(split[1]).getParticipants().size()!=1){	//방장이 나갈때
@@ -219,21 +243,57 @@ class serverThread extends Thread{
 							pw.println("/routOk "+split[1]);	//진행 순서문제로 필요한 부분
 						}
 					}else if(split[0].equals("/enterRoom")){	//대화방 입장시
-						broadcastRoom("/rin "+id+" /room "+split[1],split[1]);
-						informRoomUser(split[1]);
-						informRoomOwner(split[1]);
-						chatServerPrac.getRoomMap().get(split[1]).addMem(id, pw);
+						if(chatServerPrac.getRoomMap().get(split[1]).getBanned().contains(id)){
+							pw.println("/roomBanned");
+						}else{
+							pw.println("/enterOk "+chatServerPrac.getRoomMap().get(split[1]).getName()+" /room "+split[1]);
+							broadcastRoom("/rin "+id+" /room "+split[1],split[1]);
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							informRoomUser(split[1]);
+							informRoomOwner(split[1]);
+							chatServerPrac.getRoomMap().get(split[1]).addMem(id, pw);
+						}
 					}else if(split[0].equals("/newOwner")){
 						chatServerPrac.getRoomMap().get(split[split.length-1]).setOwner(split[1]);
 						chatServerPrac.getRoomMap().get(split[split.length-1]).removeMem(id);
 						broadcastRoom("/rchgOwner "+split[1]+" /room "+split[3],split[3]);
 						broadcastRoom("/rout "+id+" /room "+split[3],split[3]);
+					}else if(split[0].equals("/ca")){
+						if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){
+							chatServerPrac.getRoomMap().get(split[3]).setOwner(split[1]);
+							broadcastRoom("/rchgOwner "+split[1]+" /room "+split[3],split[3]);
+						}else{
+							pw.println("방장만 방장 변경 기능을 사용하실 수 있습니다. /room "+split[3]);
+						}
+					}else if(split[0].equals("/invite")){
+						
 					}else if(split[split.length-2].equals("/room")){	
 						
 						if(chatServerPrac.getRoomMap().get(split[split.length-1]).getOwner().equals(id)){
-							broadcastRoom(id+"(방장) : "+msg,split[split.length-1]);
+							if(split[0].equals("/w")){
+								if(chatServerPrac.getRoomMap().get(split[split.length-1]).getParticipants().containsKey(split[1])){//방멤버가 아닌 사람에게 귓속말을 했을 경우에는 대기실에 해당내용을 보냄
+									map.get(split[1]).println("[귓속말] "+id+" (방장) : "+msg.substring(msg.indexOf(split[2])));
+								}else{	
+									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2]),msg.indexOf(split[split.length-1])-1));
+								}
+							}else{
+								broadcastRoom(id+" (방장) : "+msg,split[split.length-1]);
+							}
 						}else{
-							broadcastRoom(id+" : "+msg,split[split.length-1]);
+							if(split[0].equals("/w")){
+								if(chatServerPrac.getRoomMap().get(split[split.length-1]).getParticipants().containsKey(split[1])){
+									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2])));
+								}else{
+									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2]),msg.indexOf(split[split.length-1])-1));
+								}
+							}else{
+								broadcastRoom(id+" : "+msg,split[split.length-1]);
+							}
 						}
 					}
 				}
