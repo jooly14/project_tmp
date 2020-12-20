@@ -125,6 +125,11 @@ public class ChatServerPrac extends JFrame implements ActionListener{
 	public void createNewRoom(String[] split,String roomNum){
 		roomMap.put(roomNum, new Room(split[2],map.get(split[2]),split[1]));
 	}
+	public void createNewSecretRoom(String[] split, String roomNum){
+		roomMap.put(roomNum, new Room(split[2], map.get(split[2]), split[1]));
+		roomMap.get(roomNum).setSecretRoom(true);
+		roomMap.get(roomNum).setPassword(split[3]);
+	}
 	public int getRoomNum() {
 		return roomNum++;
 	}
@@ -187,7 +192,7 @@ class serverThread extends Thread{
 			synchronized (chatServerPrac.getRoomMap()) {
 				System.out.println(chatServerPrac.getRoomMap().size());
 				for(Map.Entry<String, Room> entry: chatServerPrac.getRoomMap().entrySet()){
-					pw.println("/roomlist "+entry.getKey()+" "+entry.getValue().getName());
+					pw.println("/roomlist "+entry.getKey()+" "+entry.getValue().getName()+" "+(entry.getValue().isSecretRoom()?"YES":"NO"));
 				}
 			}
 			modelAll.addRow(new String[]{id.toString()});
@@ -209,6 +214,8 @@ class serverThread extends Thread{
 					if(split[split.length-1].equals("/room")){	//대기실에서 보낸 메시지
 						if(split[0].equals("/createRoom")){		//새로운 방 생성
 							createNewRoom(split);				
+						}else if(split[0].equals("/createSecretRoom")){
+							createSecretRoom(split);
 						}else if(split[0].equals("/w")){
 							map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2])));
 						}else{
@@ -242,10 +249,21 @@ class serverThread extends Thread{
 							broadcast("/removeRoom "+split[1]);
 							pw.println("/routOk "+split[1]);	//진행 순서문제로 필요한 부분
 						}
-					}else if(split[0].equals("/enterRoom")){	//대화방 입장시
+					}else if(split[0].equals("/beforeEnterRoom")){
 						if(chatServerPrac.getRoomMap().get(split[1]).getBanned().contains(id)){
 							pw.println("/roomBanned");
 						}else{
+							String participants = "";
+							for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[1]).getParticipants().entrySet()){
+								participants += entry.getKey()+" ";
+							}
+							pw.println("/roomDetail "+split[1]+" "+chatServerPrac.getRoomMap().get(split[1]).getName()
+									+" "+(chatServerPrac.getRoomMap().get(split[1]).isSecretRoom()?"YES":"NO")
+									+" "+chatServerPrac.getRoomMap().get(split[1]).getOwner()
+									+" "+participants);
+						}
+					}else if(split[0].equals("/enterRoom")){	//대화방 입장시
+						
 							pw.println("/enterOk "+chatServerPrac.getRoomMap().get(split[1]).getName()+" /room "+split[1]);
 							broadcastRoom("/rin "+id+" /room "+split[1],split[1]);
 							try {
@@ -257,7 +275,6 @@ class serverThread extends Thread{
 							informRoomUser(split[1]);
 							informRoomOwner(split[1]);
 							chatServerPrac.getRoomMap().get(split[1]).addMem(id, pw);
-						}
 					}else if(split[0].equals("/newOwner")){
 						chatServerPrac.getRoomMap().get(split[split.length-1]).setOwner(split[1]);
 						chatServerPrac.getRoomMap().get(split[split.length-1]).removeMem(id);
@@ -271,7 +288,15 @@ class serverThread extends Thread{
 							pw.println("방장만 방장 변경 기능을 사용하실 수 있습니다. /room "+split[3]);
 						}
 					}else if(split[0].equals("/invite")){
-						
+						if(chatServerPrac.getRoomMap().get(split[3]).getBanned().contains(split[1])){
+							if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){//방장만 강퇴된 사람 초대 가능
+								map.get(split[1]).println("/invite "+id+" /room "+split[4]);	//초대한 사람의 아이디와 방의 이름
+							}else{
+								pw.println("강퇴된 유저는 방장만 초대하실 수 있습니다. /room "+split[3]);
+							}
+						}else{
+							map.get(split[1]).println("/invite "+id+" /room "+split[4]);	//초대한 사람의 아이디와 방의 이름
+						}
 					}else if(split[split.length-2].equals("/room")){	
 						
 						if(chatServerPrac.getRoomMap().get(split[split.length-1]).getOwner().equals(id)){
@@ -381,5 +406,15 @@ class serverThread extends Thread{
 			}
 		}
 		chatServerPrac.createNewRoom(split,roomNum);
+	}
+	public void createSecretRoom(String[] split){
+		String roomNum = chatServerPrac.getRoomNum()+"";
+		pw.println("/roomNum "+roomNum);
+		synchronized (map) {
+			for(Map.Entry<String, PrintWriter> entry:map.entrySet()){
+				entry.getValue().println("/newSecretRoom "+split[1]+" "+roomNum);
+			}
+		}
+		chatServerPrac.createNewSecretRoom(split,roomNum);
 	}
 }

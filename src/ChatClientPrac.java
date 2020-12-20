@@ -52,7 +52,7 @@ public class ChatClientPrac extends JFrame implements ActionListener{
 	
 	HashMap<String, NewRoomFrame> roomInfoList;	//현재 접속해 있는 채팅방
 	
-	String[] headerRoom = {"번호","대화방 이름"};
+	String[] headerRoom = {"번호","대화방 이름","비밀방"};
 	String[][] contentRoom = {};
 	DefaultTableModel modelRoom;
 	JTable tableRoom;
@@ -66,6 +66,7 @@ public class ChatClientPrac extends JFrame implements ActionListener{
 	Vector<String> blockNameList = new Vector<>();
 	
 	TrayIcon trayIcon;
+	ChatRoomDetailDialog chatRoomDetailDialog;
 	public ChatClientPrac() {
 		init();
 		setClient();
@@ -270,6 +271,7 @@ public class ChatClientPrac extends JFrame implements ActionListener{
 		if(e.getSource()==newRoomBtn){	//새로운 방 만들기
 			new ChatNewRoomDialog(this);
 		}else if(e.getSource()== enterBtn){	//대화방 리스트에서 선택 후 입장 버튼을 누른 경우
+			
 			if(tableRoom.getSelectedRow()!=-1){
 				boolean alreadyIn = false;
 				for(Map.Entry<String, NewRoomFrame> entry : roomInfoList.entrySet()){
@@ -280,8 +282,8 @@ public class ChatClientPrac extends JFrame implements ActionListener{
 				if(alreadyIn){
 					JOptionPane.showMessageDialog(this, "이미 입장하신 방입니다.");
 				}else{
-					
-					pw.println("/enterRoom "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
+					pw.println("/beforeEnterRoom "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
+//					pw.println("/enterRoom "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
 				}
 			}
 		}else{	//대기실에서 텍스트 필드의 메시지 전송시
@@ -294,6 +296,11 @@ public class ChatClientPrac extends JFrame implements ActionListener{
 		newRoomFrame = new NewRoomFrame(this,name);
 		newRoomFrame.getModelOwner().addRow(new String[]{id});
 		pw.println("/createRoom "+name+" "+id+" /room");
+	}
+	public void createSecretRoom(String name,char[] password){
+		newRoomFrame = new NewRoomFrame(this,name);
+		newRoomFrame.getModelOwner().addRow(new String[]{id});
+		pw.println("/createSecretRoom "+name+" "+id+" "+password.toString()+" /room");
 	}
 	public void enterRoom(String name,String roomNum){
 		newRoomFrame = new NewRoomFrame(this,name);
@@ -343,6 +350,12 @@ public class ChatClientPrac extends JFrame implements ActionListener{
 	}
 	public void modelRoomDataChanged(){
 		modelRoom.fireTableDataChanged();
+	}
+	public void showInviteAccept(String[] split){
+		JOptionPane.showConfirmDialog(this, split[1]+"님이 "+ split[3]+"번 대화방에 초대하셨습니다.", "", JOptionPane.OK_CANCEL_OPTION);
+	}
+	public void createBeforeEnterRoomDetail(String[] split){
+		chatRoomDetailDialog = new ChatRoomDetailDialog(this);
 	}
 }
 class ClientThread extends Thread{
@@ -397,7 +410,9 @@ class ClientThread extends Thread{
 					}
 					chatClientPrac.modelRoomDataChanged();
 				}else if(split[0].equals("/newRoom")){	//새로운 방이 생기면 대기실에 방 목록 변경
-					chatClientPrac.getModelRoom().addRow(new String[]{split[2],split[1]});
+					chatClientPrac.getModelRoom().addRow(new String[]{split[2],split[1],"NO"});
+				}else if(split[0].equals("/newSecretRoom")){
+					chatClientPrac.getModelRoom().addRow(new String[]{split[2],split[1],"YES"});
 				}else if(split[0].equals("/removeRoom")){	//방이 사라지면 대기실 방 목록 변경
 					for (int i = 0; i < chatClientPrac.getModelRoom().getRowCount(); i++) {
 						if(chatClientPrac.getModelRoom().getValueAt(i, 0).equals(split[1])){
@@ -430,7 +445,9 @@ class ClientThread extends Thread{
 				}else if(split[0].equals("/user")){	//로그인하면 기존 유저 리스트 저장
 					chatClientPrac.getModelAll().addRow(new String[]{split[1]});
 				}else if(split[0].equals("/roomlist")){
-					chatClientPrac.getModelRoom().addRow(new String[]{split[1],split[2]});
+					chatClientPrac.getModelRoom().addRow(new String[]{split[1],split[2],split[3]});
+				}else if(split[0].equals("/roomDetail")){
+					chatClientPrac.createBeforeEnterRoomDetail(split);
 				}else if(split[0].equals("/enterOk")){
 					chatClientPrac.enterRoom(split[1],split[3]);
 				}else if(split[0].equals("/roomuser")){	//대화방 입장 시 기존 유저 리스트 저장
@@ -517,6 +534,8 @@ class ClientThread extends Thread{
 					}
 				}else if(split[0].equals("/roomBanned")){
 					chatClientPrac.showAlreadyBannedRoom();
+				}else if(split[0].equals("/invite")){
+					chatClientPrac.showInviteAccept(split);
 				}else if(split[split.length-1].equals("/room")){	//대기실 채팅
 					if(split[0].equals("[귓속말]")){//귓속말 차단 여부 확인
 						boolean blocked = false;

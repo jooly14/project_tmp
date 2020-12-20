@@ -8,6 +8,9 @@ public class Room {
 	String owner;
 	String name;	//πÊ¿Ã∏ß
 	Vector<String> banned;
+	
+	String password;
+	boolean secretRoom;
 	public Room(String owner,PrintWriter pw,String name) {
 		Participants = new HashMap<>();
 		Participants.put(owner,pw);
@@ -45,4 +48,21 @@ public class Room {
 	public void removeMem(String name){
 		Participants.remove(name);
 	}
+
+	public String getPassword() {
+		return password;
+	}
+
+	public void setPassword(String password) {
+		this.password = password;
+	}
+
+	public boolean isSecretRoom() {
+		return secretRoom;
+	}
+
+	public void setSecretRoom(boolean secretRoom) {
+		this.secretRoom = secretRoom;
+	}
+	
 }
