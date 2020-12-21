@@ -2,17 +2,26 @@ import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.Date;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.JFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
@@ -41,6 +50,7 @@ public class ChatServerPrac extends JFrame implements ActionListener{
 	
 	int roomNum;
 	
+	BufferedReader br;
 	
 	//초기화
 	public ChatServerPrac() {
@@ -97,6 +107,7 @@ public class ChatServerPrac extends JFrame implements ActionListener{
 		img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
 		setIconImage(img);
 		
+		
 		add(pnl);
 		setVisible(true);
 	}
@@ -150,7 +161,6 @@ class serverThread extends Thread{
 		this.modelAll =modelAll;
 		this.chatServerPrac =chatServerPrac;
 		
-		
 		try {
 			pw = new PrintWriter(clientSocket.getOutputStream(),true);
 			br = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
@@ -164,7 +174,6 @@ class serverThread extends Thread{
 			while(exist){
 				exist = false;
 				id = br.readLine();
-				System.out.println(id);
 				for (int i = 0; i < chatServerPrac.modelAll.getRowCount(); i++) {
 					if(chatServerPrac.modelAll.getValueAt(i, 0).equals(id)){
 						pw.println("/exist");
@@ -190,7 +199,6 @@ class serverThread extends Thread{
 				map.put(id, pw);
 			}
 			synchronized (chatServerPrac.getRoomMap()) {
-				System.out.println(chatServerPrac.getRoomMap().size());
 				for(Map.Entry<String, Room> entry: chatServerPrac.getRoomMap().entrySet()){
 					pw.println("/roomlist "+entry.getKey()+" "+entry.getValue().getName()+" "+(entry.getValue().isSecretRoom()?"YES":"NO"));
 				}
@@ -217,24 +225,51 @@ class serverThread extends Thread{
 						}else if(split[0].equals("/createSecretRoom")){
 							createSecretRoom(split);
 						}else if(split[0].equals("/w")){
+							pw.println("[귓속말]("+split[1]+"에게 보냄) "+id+" : "+msg.substring(msg.indexOf(split[2])));
 							map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2])));
+						}else if(split[0].equals("/chgId")){	//아이디를 변경한 경우
+							//사람들에게 알리기
+							//방장인 경우 방장 이름도 변경
+							broadcast(msg);
+							map.put(split[2], map.get(split[1]));
+							map.remove(split[1]);
+							id = split[2];
+							for(Map.Entry<String, Room> entry : chatServerPrac.getRoomMap().entrySet()){
+								if(entry.getValue().getBanned().contains(split[1])){
+									entry.getValue().getBanned().remove(split[1]);
+									entry.getValue().getBanned().add(split[2]);
+								}
+								if(entry.getValue().getOwner().equals(split[1])){
+									entry.getValue().setOwner(split[2]);
+									broadcastRoom("/rchgOwner "+split[2]+" /room "+entry.getKey(), entry.getKey());
+								}
+								if(entry.getValue().getParticipants().containsKey(split[1])){
+									entry.getValue().getParticipants().put(split[2], entry.getValue().getParticipants().get(split[1]));
+									entry.getValue().getParticipants().remove(split[1]);
+								}
+							}
 						}else{
 							broadcast(id+" : "+msg);	//대기실에서 메시지 보내기
 							ta.append(id+" : "+msg+"\n");
 						}
 					}else if(split[0].equals("/ban")){
-						if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){
-							for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[3]).getParticipants().entrySet()){
-								if(entry.getKey().equals(split[1])){
-									entry.getValue().println("/banned "+entry.getKey()+" /room "+split[3]);
-								}else{
-									entry.getValue().println(msg);
+						if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(split[1])){
+							pw.println("방장은 본인을 강퇴시킬 수 없습니다. /room "+split[3]);
+						}else{	//방장이 방장을 강퇴시킬수 없게 설정
+							if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){
+								for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[3]).getParticipants().entrySet()){
+									if(entry.getKey().equals(split[1])){
+										entry.getValue().println("/banned "+entry.getKey()+" /room "+split[3]);
+									}else{
+										entry.getValue().println(msg);
+									}
 								}
+								chatServerPrac.getRoomMap().get(split[3]).getParticipants().remove(split[1]);
+								chatServerPrac.getRoomMap().get(split[3]).getBanned().add(split[1]);
+							}else{
+								pw.println("방장만 강퇴 기능을 사용하실 수 있습니다. /room "+split[3]);
 							}
-							chatServerPrac.getRoomMap().get(split[3]).getParticipants().remove(split[1]);
-							chatServerPrac.getRoomMap().get(split[3]).getBanned().add(split[1]);
-						}else{
-							pw.println("방장만 강퇴 기능을 사용하실 수 있습니다. /room "+split[3]);
+							
 						}
 					}else if(split[0].equals("/exitRoom")){		//대화방에서 나갈때
 						if(chatServerPrac.getRoomMap().get(split[1]).getOwner().equals(id)&&chatServerPrac.getRoomMap().get(split[1]).getParticipants().size()!=1){	//방장이 나갈때
@@ -263,7 +298,9 @@ class serverThread extends Thread{
 									+" "+participants);
 						}
 					}else if(split[0].equals("/enterRoom")){	//대화방 입장시
-						
+						if(chatServerPrac.getRoomMap().get(split[1]).getParticipants().containsKey(id)){	//초대된 방에 이미 입장해있는 경우(초대를 여러명이 여러번한 경우 들어갔는데 또 들어갈 수도 있어서)
+							pw.println("/inviteNo "+chatServerPrac.getRoomMap().get(split[1]).getName()+" /room "+split[1]);
+						}else{
 							pw.println("/enterOk "+chatServerPrac.getRoomMap().get(split[1]).getName()+" /room "+split[1]);
 							broadcastRoom("/rin "+id+" /room "+split[1],split[1]);
 							try {
@@ -275,46 +312,111 @@ class serverThread extends Thread{
 							informRoomUser(split[1]);
 							informRoomOwner(split[1]);
 							chatServerPrac.getRoomMap().get(split[1]).addMem(id, pw);
+						}
+					}else if(split[0].equals("/enterSecretRoom")){	//비밀방에 입장하기전 비밀 번호 확인 절차
+						if(split[2].equals(chatServerPrac.getRoomMap().get(split[1]).getPassword())){
+							pw.println("/correctPassword "+split[1]);
+							pw.println("/enterOk "+chatServerPrac.getRoomMap().get(split[1]).getName()+" /room "+split[1]);
+							broadcastRoom("/rin "+id+" /room "+split[1],split[1]);
+							try {
+								Thread.sleep(100);
+							} catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+							informRoomUser(split[1]);
+							informRoomOwner(split[1]);
+							chatServerPrac.getRoomMap().get(split[1]).addMem(id, pw);
+						}else{
+							pw.println("/wrongPassword "+split[1]);
+						}
 					}else if(split[0].equals("/newOwner")){
 						chatServerPrac.getRoomMap().get(split[split.length-1]).setOwner(split[1]);
 						chatServerPrac.getRoomMap().get(split[split.length-1]).removeMem(id);
 						broadcastRoom("/rchgOwner "+split[1]+" /room "+split[3],split[3]);
 						broadcastRoom("/rout "+id+" /room "+split[3],split[3]);
 					}else if(split[0].equals("/ca")){
+						
 						if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){
 							chatServerPrac.getRoomMap().get(split[3]).setOwner(split[1]);
 							broadcastRoom("/rchgOwner "+split[1]+" /room "+split[3],split[3]);
 						}else{
 							pw.println("방장만 방장 변경 기능을 사용하실 수 있습니다. /room "+split[3]);
 						}
-					}else if(split[0].equals("/invite")){
-						if(chatServerPrac.getRoomMap().get(split[3]).getBanned().contains(split[1])){
-							if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){//방장만 강퇴된 사람 초대 가능
-								map.get(split[1]).println("/invite "+id+" /room "+split[4]);	//초대한 사람의 아이디와 방의 이름
-							}else{
-								pw.println("강퇴된 유저는 방장만 초대하실 수 있습니다. /room "+split[3]);
-							}
+					}else if(split[0].equals("/invite")){	// 초대
+						if(chatServerPrac.getRoomMap().get(split[3]).getParticipants().containsKey(split[1])){	//이미 방에 있는 사람을 초대한 경우
+							pw.println("이미 방에 입장하신 유저는 초대할 수 없습니다. /room "+split[3]);
 						}else{
-							map.get(split[1]).println("/invite "+id+" /room "+split[4]);	//초대한 사람의 아이디와 방의 이름
+							if(chatServerPrac.getRoomMap().get(split[3]).getBanned().contains(split[1])){
+								if(chatServerPrac.getRoomMap().get(split[3]).getOwner().equals(id)){//방장만 강퇴된 사람 초대 가능
+									
+									String participants = "";
+									for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[3]).getParticipants().entrySet()){
+										participants += entry.getKey()+" ";
+									}
+									map.get(split[1]).println("/inviteRoomDetail "+split[3]+" "+chatServerPrac.getRoomMap().get(split[3]).getName()
+											+" "+id		//누가 초대했는지
+											+" "+chatServerPrac.getRoomMap().get(split[3]).getOwner()
+											+" "+participants);
+								}else{
+									pw.println("강퇴된 유저는 방장만 초대하실 수 있습니다. /room "+split[3]);
+								}
+							}else{
+								String participants = "";
+								for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[3]).getParticipants().entrySet()){
+									participants += entry.getKey()+" ";
+								}
+								map.get(split[1]).println("/inviteRoomDetail "+split[3]+" "+chatServerPrac.getRoomMap().get(split[3]).getName()
+										+" "+id		//누가 초대했는지
+										+" "+chatServerPrac.getRoomMap().get(split[3]).getOwner()
+										+" "+participants);
+							}	
 						}
-					}else if(split[split.length-2].equals("/room")){	
 						
-						if(chatServerPrac.getRoomMap().get(split[split.length-1]).getOwner().equals(id)){
+					}else if(split[0].equals("/rejectInvite")){
+						map.get(split[1]).println(id+"님께서 초대를 거절하셨습니다. /room "+split[3]);
+					}else if(split[0].equals("/blockWhisper")){
+						if(split.length==2){
+							map.get(split[1]).println(id+"님께서 귓속말을 차단했습니다. /room");
+						}else{
+							map.get(split[1]).println(id+"님께서 귓속말을 차단했습니다. /room "+split[3]);
+						}
+					}else if(split[0].equals("/sendFile")){
+						if(split[1].equals("/all")){
+							for(Map.Entry<String, PrintWriter> entry : chatServerPrac.getRoomMap().get(split[4]).getParticipants().entrySet()){
+								if(!entry.getKey().equals(id)){
+									entry.getValue().println("/sendFile "+entry.getKey()+" "+split[2]+" "+id+" /room "+split[split.length-1]);
+								}
+							}
+							
+						}else{
+							map.get(split[1]).println("/sendFile "+split[1]+" "+split[2]+" "+id+" /room "+split[split.length-1]);
+						}
+					}else if(split[0].equals("/receiveFile")){
+						new fileSendServer(chatServerPrac).start();
+						map.get(split[3]).println(msg);
+						map.get(split[1]).println(msg);
+					}else if(split[split.length-2].equals("/room")){	
+						if(chatServerPrac.getRoomMap().get(split[split.length-1]).getOwner().equals(id)){	//방장이 귓속말한 경우
 							if(split[0].equals("/w")){
 								if(chatServerPrac.getRoomMap().get(split[split.length-1]).getParticipants().containsKey(split[1])){//방멤버가 아닌 사람에게 귓속말을 했을 경우에는 대기실에 해당내용을 보냄
 									map.get(split[1]).println("[귓속말] "+id+" (방장) : "+msg.substring(msg.indexOf(split[2])));
+									pw.println("[귓속말]("+split[1]+"에게 보냄) "+id+" (방장) : "+msg.substring(msg.indexOf(split[2])));
 								}else{	
-									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2]),msg.indexOf(split[split.length-1])-1));
+									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2]))+" /room");
+									pw.println("[귓속말]("+split[1]+"에게 보냄) "+id+" : "+msg.substring(msg.indexOf(split[2])));
 								}
 							}else{
 								broadcastRoom(id+" (방장) : "+msg,split[split.length-1]);
 							}
-						}else{
+						}else{	//방장이 아닌 사람이 귓속말 보낸 경우
 							if(split[0].equals("/w")){
 								if(chatServerPrac.getRoomMap().get(split[split.length-1]).getParticipants().containsKey(split[1])){
 									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2])));
+									pw.println("[귓속말]("+split[1]+"에게 보냄) "+id+" : "+msg.substring(msg.indexOf(split[2])));
 								}else{
-									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2]),msg.indexOf(split[split.length-1])-1));
+									map.get(split[1]).println("[귓속말] "+id+" : "+msg.substring(msg.indexOf(split[2]))+" /room");
+									pw.println("[귓속말]("+split[1]+"에게 보냄) "+id+" : "+msg.substring(msg.indexOf(split[2])));
 								}
 							}else{
 								broadcastRoom(id+" : "+msg,split[split.length-1]);
@@ -398,7 +500,8 @@ class serverThread extends Thread{
 		}
 	}
 	public void createNewRoom(String[] split){
-		String roomNum = chatServerPrac.getRoomNum()+"";
+		SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMdd");
+		String roomNum = chatServerPrac.getRoomNum()+format1.format(Calendar.getInstance().getTime());
 		pw.println("/roomNum "+roomNum);
 		synchronized (map) {
 			for(Map.Entry<String, PrintWriter> entry:map.entrySet()){
@@ -408,7 +511,8 @@ class serverThread extends Thread{
 		chatServerPrac.createNewRoom(split,roomNum);
 	}
 	public void createSecretRoom(String[] split){
-		String roomNum = chatServerPrac.getRoomNum()+"";
+		SimpleDateFormat format1 = new SimpleDateFormat("yyyyMMdd");
+		String roomNum = chatServerPrac.getRoomNum()+format1.format(Calendar.getInstance().getTime());
 		pw.println("/roomNum "+roomNum);
 		synchronized (map) {
 			for(Map.Entry<String, PrintWriter> entry:map.entrySet()){
@@ -416,5 +520,62 @@ class serverThread extends Thread{
 			}
 		}
 		chatServerPrac.createNewSecretRoom(split,roomNum);
+	}
+}
+
+class fileSendServer extends Thread{
+	ChatServerPrac chatServerPrac;
+	ServerSocket serverSocket;
+	Socket clientSocket;
+	Socket clientSocket2;
+	BufferedInputStream bis = null;
+	BufferedOutputStream bos = null;
+	public fileSendServer(ChatServerPrac chatServerPrac) {
+		this.chatServerPrac = chatServerPrac;
+	}
+	@Override
+	public void run() {
+		try {
+			serverSocket = new ServerSocket(4444);
+			clientSocket = serverSocket.accept();
+			clientSocket2 = serverSocket.accept();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		try {
+			int data;
+			bis = new BufferedInputStream(clientSocket.getInputStream());
+			bos = new BufferedOutputStream(clientSocket2.getOutputStream());
+			while ((data = bis.read())!=-1) {
+				bos.write(data);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+				try {
+					if(bis!=null){
+						bis.close();
+					}
+					if(bos!=null){
+						bos.close();
+					}
+					if(clientSocket!=null){
+						clientSocket.close();
+					}
+					if(clientSocket2!=null){
+						clientSocket2.close();
+					}
+					if(serverSocket!=null){
+						serverSocket.close();
+					}
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+
 	}
 }
