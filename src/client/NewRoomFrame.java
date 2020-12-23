@@ -1,4 +1,5 @@
 package client;
+import java.awt.Color;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Toolkit;
@@ -27,10 +28,12 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -56,8 +59,6 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 	String[][] contentOwner = {};
 	JScrollPane pane_tableOwner;
 	
-	
-	
 	JButton exitBtn;
 	JButton btnRoom, btnAll;
 	JButton btnConfig;
@@ -68,13 +69,17 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 	
 	boolean roomAlarm = true;
 	
-	ChatClient chatClientPrac;
-	public NewRoomFrame(ChatClient chatClientPrac, String roomName) {
+	ChatClient chatClient;
+	public NewRoomFrame(ChatClient chatClient, String roomName) {
 		setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		setSize(620,600);
+		setSize(620,520);
+		
+		UIManager UI=new UIManager();
+		 UI.put("OptionPane.background",new ColorUIResource(255,255,255));
+		 UI.put("Panel.background",new ColorUIResource(255,255,255));
 		
 		this.roomName = roomName;
-		this.chatClientPrac = chatClientPrac;
+		this.chatClient = chatClient;
 		
 		modelRoom = new DefaultTableModel(contentRoom, headerRoom){
 			public boolean isCellEditable(int rowIndex, int colIndex){
@@ -86,9 +91,8 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		tableRoom.getTableHeader().setResizingAllowed(false);
 		tableRoom.setRowSorter(new TableRowSorter<DefaultTableModel>(modelRoom));
 		pane_tableRoom = new JScrollPane(tableRoom);
-		pane_tableRoom.setBounds(500, 90, 100, 400);
 		try {
-			tableRoom.setDefaultRenderer(Class.forName("java.lang.Object"), new BlockRenderer(chatClientPrac));
+			tableRoom.setDefaultRenderer(Class.forName("java.lang.Object"), new BlockRenderer(chatClient));
 		} catch (ClassNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -106,37 +110,48 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		tableAll.getTableHeader().setResizingAllowed(false);
 		tableAll.setRowSorter(new TableRowSorter<DefaultTableModel>(modelAll));
 		pane_tableAll = new JScrollPane(tableAll);
-		pane_tableAll.setBounds(500, 90, 100, 400);
 		try {
-			tableAll.setDefaultRenderer(Class.forName("java.lang.Object"), new BlockRenderer(chatClientPrac));
+			tableAll.setDefaultRenderer(Class.forName("java.lang.Object"), new BlockRenderer(chatClient));
 		} catch (ClassNotFoundException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		
 		JPopupMenu popupMenu1 = new JPopupMenu();	//전체 사용자 테이블에서 사용
+		JMenuItem item1_0 = new JMenuItem("귓속말 보내기");
 		JMenuItem item1_1 = new JMenuItem("귓속말 차단");
 		JMenuItem item1_2 = new JMenuItem("귓속말 차단 해제");
 		JMenuItem item1_3 = new JMenuItem("초대하기");
 		popupMenu1.add(item1_3);
 		
 		JPopupMenu popupMenu2 = new JPopupMenu();	//대화방 사용자 테이블에서 사용
+		JMenuItem item2_0 = new JMenuItem("귓속말 보내기");
 		JMenuItem item2_1 = new JMenuItem("귓속말 차단");
 		JMenuItem item2_2 = new JMenuItem("귓속말 차단 해제");
 		JMenuItem item2_3 = new JMenuItem("방장 변경");
-		JMenuItem item2_4 = new JMenuItem("파일 전송");
+		JMenuItem item2_4 = new JMenuItem("파일 전송");		//대화방 사용자들끼리만 파일 전송가능
+		JMenuItem item2_4_2 = new JMenuItem("모두에게 파일 전송");		//대화방 사용자들끼리만 파일 전송가능
+		JMenuItem itme2_5 = new JMenuItem("강퇴");
 		
+		
+		item1_0.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				tf.setText("/w "+tableAll.getValueAt(tableAll.getSelectedRow(), 0)+" ");
+				tf.requestFocus();
+			}
+		});
 		item1_1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				int okCancelChk = JOptionPane.showConfirmDialog(null, tableAll.getValueAt(tableAll.getSelectedRow(), 0)+"님의 귓속말을 차단하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
 				if(okCancelChk==JOptionPane.OK_OPTION){
-					chatClientPrac.getBlockNameList().add(tableAll.getValueAt(tableAll.getSelectedRow(), 0).toString());
+					chatClient.getBlockNameList().add(tableAll.getValueAt(tableAll.getSelectedRow(), 0).toString());
 					JOptionPane.showMessageDialog(null, "귓속말 차단되었습니다.");
 					modelRoomDataChanged();
 					modelAllDataChanged();
-					chatClientPrac.modelAllDataChanged();
+					chatClient.modelAllDataChanged();
 				}
 			}
 		});
@@ -145,11 +160,11 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			public void actionPerformed(ActionEvent e) {
 				int okCancelChk = JOptionPane.showConfirmDialog(null, tableAll.getValueAt(tableAll.getSelectedRow(), 0)+"님의 귓속말 차단을 해제하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
 				if(okCancelChk==JOptionPane.OK_OPTION){
-					chatClientPrac.getBlockNameList().remove(tableAll.getValueAt(tableAll.getSelectedRow(), 0).toString());
+					chatClient.getBlockNameList().remove(tableAll.getValueAt(tableAll.getSelectedRow(), 0).toString());
 					JOptionPane.showMessageDialog(null, "귓속말 차단 해제되었습니다.");
 					modelRoomDataChanged();
 					modelAllDataChanged();
-					chatClientPrac.modelAllDataChanged();
+					chatClient.modelAllDataChanged();
 
 				}
 			}
@@ -157,7 +172,7 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		item1_3.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				chatClientPrac.chatInRoom("/invite "+tableAll.getValueAt(tableAll.getSelectedRow(), 0), roomNum);
+				chatClient.chatInRoom("/invite "+tableAll.getValueAt(tableAll.getSelectedRow(), 0), roomNum);
 			}
 		});
 		
@@ -167,11 +182,13 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 				// TODO Auto-generated method stub
 				if(tableAll.getSelectedRow()!=-1){
-					if(chatClientPrac.getBlockNameList().contains(tableAll.getValueAt(tableAll.getSelectedRow(), 0))){
+					if(chatClient.getBlockNameList().contains(tableAll.getValueAt(tableAll.getSelectedRow(), 0))){
 						popupMenu1.remove(item1_1);
+						popupMenu1.remove(item1_0);
 						popupMenu1.add(item1_2);
 					}else{
 						popupMenu1.remove(item1_2);
+						popupMenu1.add(item1_0);
 						popupMenu1.add(item1_1);
 					}
 				}else{
@@ -182,17 +199,25 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {}
 			public void popupMenuCanceled(PopupMenuEvent e) {}
 		});
+		
+		item2_0.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				tf.setText("/w "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+" ");
+				tf.requestFocus();
+			}
+		});
 		item2_1.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// TODO Auto-generated method stub
 				int okCancelChk = JOptionPane.showConfirmDialog(null, tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+"님의 귓속말을 차단하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
 				if(okCancelChk==JOptionPane.OK_OPTION){
-					chatClientPrac.getBlockNameList().add(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
+					chatClient.getBlockNameList().add(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
 					JOptionPane.showMessageDialog(null, "귓속말 차단되었습니다.");
 					modelRoomDataChanged();
 					modelAllDataChanged();
-					chatClientPrac.modelAllDataChanged();
+					chatClient.modelAllDataChanged();
 
 				}
 			}
@@ -202,11 +227,11 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			public void actionPerformed(ActionEvent e) {
 				int okCancelChk = JOptionPane.showConfirmDialog(null, tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+"님의 귓속말 차단을 해제하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
 				if(okCancelChk==JOptionPane.OK_OPTION){
-					chatClientPrac.getBlockNameList().remove(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
+					chatClient.getBlockNameList().remove(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0).toString());
 					JOptionPane.showMessageDialog(null, "귓속말 차단 해제되었습니다.");
 					modelRoomDataChanged();
 					modelAllDataChanged();
-					chatClientPrac.modelAllDataChanged();
+					chatClient.modelAllDataChanged();
 
 				}
 			}
@@ -216,7 +241,7 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			public void actionPerformed(ActionEvent e) {
 				int chkOkCancel = JOptionPane.showConfirmDialog(null, tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+"님에게 방장 자격을 주시겠습니까?", "",  JOptionPane.OK_CANCEL_OPTION);
 				if(chkOkCancel == JOptionPane.OK_OPTION){
-					chatClientPrac.chatInRoom("/ca "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0),roomNum);
+					chatClient.chatInRoom("/ca "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0),roomNum);
 				}
 			}
 		});
@@ -229,28 +254,51 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 				int option = fileChooser.showOpenDialog(null);
 				if(option == JFileChooser.APPROVE_OPTION){
 					File file = fileChooser.getSelectedFile();
-//					System.out.println(file.getName().substring(file.getName().lastIndexOf(file.separator)+1));
-					chatClientPrac.chatInRoom("/sendFile "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+" "+file.getAbsolutePath(),roomNum);
+					chatClient.chatInRoom("/sendFile "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0)+" "+file.getAbsolutePath(),roomNum);
 				}
 			}
 		});
+		item2_4_2.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JFileChooser fileChooser = new JFileChooser();
+				fileChooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
+				fileChooser.setMultiSelectionEnabled(false);
+				int option = fileChooser.showOpenDialog(null);
+				if(option == JFileChooser.APPROVE_OPTION){
+					File file = fileChooser.getSelectedFile();
+					chatClient.chatInRoom("/sendFile all "+file.getAbsolutePath(),roomNum);
+				}
+			}
+		});
+		itme2_5.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				chatClient.chatInRoom("/ban "+tableRoom.getValueAt(tableRoom.getSelectedRow(), 0), roomNum);
+			}
+		});
 		popupMenu2.add(item2_4);
+		popupMenu2.add(item2_4_2);
 		popupMenu2.addPopupMenuListener(new PopupMenuListener() {
 			@Override
 			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
 				// TODO Auto-generated method stub
 				if(tableRoom.getSelectedRow()!=-1){
-					if(chatClientPrac.getBlockNameList().contains(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0))){
+					if(chatClient.getBlockNameList().contains(tableRoom.getValueAt(tableRoom.getSelectedRow(), 0))){
 						popupMenu2.remove(item2_1);
+						popupMenu2.remove(item2_0);
 						popupMenu2.add(item2_2);
 					}else{
 						popupMenu2.remove(item2_2);
 						popupMenu2.add(item2_1);
+						popupMenu2.add(item2_0);
 					}
-					if(modelOwner.getValueAt(0, 0).equals(getTitle().split(" ")[6])){
+					if(modelOwner.getValueAt(0, 0).equals(chatClient.getId())){	//방장인 경우에만 방장 변경 메뉴아이템이 보이도록
 						popupMenu2.add(item2_3);
+						popupMenu2.add(itme2_5);
 					}else{
 						popupMenu2.remove(item2_3);
+						popupMenu2.remove(itme2_5);
 					}	
 					
 				}else{
@@ -294,13 +342,17 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		tableOwner.getTableHeader().setReorderingAllowed(false);
 		tableOwner.getTableHeader().setResizingAllowed(false);
 		pane_tableOwner = new JScrollPane(tableOwner);
-		pane_tableOwner.setBounds(500, 40, 100, 50);
 		add(pane_tableOwner);
 		
 		tf = new JTextField();
 		tf.addActionListener(this);
 		tf.setBounds(0, 400, 500, 30);
+		pane_tableRoom.setBounds(500, 81, 100, 349);
+		pane_tableAll.setBounds(500, 81, 100, 349);
+		pane_tableOwner.setBounds(500, 40, 100, 41);
+
 		ta =  new JTextArea();
+		ta.setEditable(false);
 		JScrollPane pane = new JScrollPane(ta);
 		pane.setBounds(0, 0, 500, 400);
 		add(pane_tableRoom);
@@ -315,6 +367,16 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		btnAll.addActionListener(this);
 		btnRoom.setMargin(new Insets(0, 0, 0, 0));
 		btnAll.setMargin(new Insets(0, 0, 0, 0));
+		btnAll.setBackground(Color.white);
+		btnRoom.setBackground(Color.white);
+		tableAll.getTableHeader().setBackground(Color.white);
+		tableRoom.getTableHeader().setBackground(Color.white);
+		tableOwner.getTableHeader().setBackground(Color.white);
+		pane_tableAll.getViewport().setBackground(Color.white);
+		pane_tableOwner.getViewport().setBackground(Color.white);
+		pane_tableRoom.getViewport().setBackground(Color.white);
+		getContentPane().setBackground(Color.white);
+		setResizable(false);
 		
 		btnRoom.setBorder(BorderFactory.createLoweredBevelBorder());
 		btnAll.setBorder(BorderFactory.createRaisedBevelBorder());
@@ -322,7 +384,6 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		add(btnAll);
 		
 		exitBtn = new JButton("나가기");
-		exitBtn.setBounds(0, 480, 150, 50);
 		exitBtn.addActionListener(this);
 		
 		add(exitBtn);
@@ -333,10 +394,20 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		
 		btnConfig = new JButton("설정");
 		btnConfig.addActionListener(this);
-		btnConfig.setBounds(150, 480, 150, 50);
 		btnSave = new JButton("대화내용 저장");
 		btnSave.addActionListener(this);
-		btnSave.setBounds(300, 480, 150, 50);
+		exitBtn.setBounds(300, 450, 150, 30);
+		btnConfig.setBounds(150, 450, 150, 30);
+		btnSave.setBounds(0, 450, 150, 30);
+		exitBtn.setBackground(Color.WHITE);
+		btnConfig.setBackground(Color.WHITE);
+		btnSave.setBackground(Color.WHITE);
+//		btnSave.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1,Color.black));
+//		btnConfig.setBorder(BorderFactory.createMatteBorder(1,0,1,0,Color.black));
+//		exitBtn.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1,Color.black));
+		
+		add(btnConfig);
+		add(btnSave);
 		
 		setLayout(null);
 		setVisible(true);
@@ -348,7 +419,7 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			}
 			@Override
 			public void windowClosing(WindowEvent e) {
-				chatClientPrac.exitRoom(roomNum);
+				chatClient.exitRoom(roomNum);
 			}
 		});
 		
@@ -396,11 +467,20 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			}
 		}
 	}
-	public void chgRoomName(String newRoomName){
-//		setTitle("채팅방 : "+name+" ( 채팅명 : "+id+" ) - "+roomNum);
-//		setTitle(getTitle().substring(0,getTitle().indexOf(roomName))+newRoomName+getTitle().substring(getTitle().indexOf(" ( 채팅명 : ")));
-		chatClientPrac.chatInRoom("/chgRoomName "+roomName+" "+newRoomName, roomNum);
-//		setRoomName(newRoomName);
+	public void pwChgRoomName(){
+		JOptionPane.showMessageDialog(this, "대화방 이름은 비속어를 포함할 수 없습니다.");
+	}
+	public void chgRoomNameOK(){
+		JOptionPane.showMessageDialog(this, "대화방 이름이 변경되었습니다.");
+	}
+	public void cancelSecretRoomOk(){
+		JOptionPane.showMessageDialog(this, "비밀 대화방 설정이 취소되었습니다.");
+	}
+	public void chgRoomPassWordOk(){
+		JOptionPane.showMessageDialog(this, "대화방 비밀번호가 재설정되었습니다.");
+	}
+	public void chgRoomName(String newRoomName){	//대화방 설정에서 대화방 이름 변경
+		chatClient.chatInRoom("/chgRoomName "+newRoomName, roomNum);
 	}
 	public void modelRoomDataChanged(){
 		modelRoom.fireTableDataChanged();
@@ -437,12 +517,12 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 		return roomNum;
 	}
 	public ChatClient getChatClientPrac() {
-		return chatClientPrac;
+		return chatClient;
 	}
 	public void setRoomName(String roomName) {
 		this.roomName = roomName;
 	}
-	public void receiveFileChk(String[] split){
+	public void receiveFileChk(String[] split){	//파일을 전송받을 것인지 확인	//어느 위치에 저장 할 것인지
 //		File file = new File(split[2]); 
 		int chkReceive = JOptionPane.showConfirmDialog(this, split[3]+"님께서 보내신 파일("+split[2].substring(split[2].lastIndexOf(File.separator)+1)+")를 전송받으시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
 		if(chkReceive == JOptionPane.OK_OPTION){
@@ -468,13 +548,13 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 					break;
 				}
 			}
-			chatClientPrac.receiveFile(split,filechooser2.getSelectedFile().getAbsolutePath());
+			chatClient.receiveFile(split,filechooser2.getSelectedFile().getAbsolutePath());
 		}
 	}
-	public void completeSend(String[] split){
+	public void completeSend(String[] split){	//전송이 완료되었음을 알림
 		JOptionPane.showMessageDialog(this, split[1]+"에게 파일("+split[4].substring(split[4].lastIndexOf(File.separator)+1)+") 전송을 완료했습니다.");
 	}
-	public void completeReceive(String[] split){
+	public void completeReceive(String[] split){	//전송이 완료되었음을 알림
 		JOptionPane.showMessageDialog(this, split[3]+"에게서 파일("+split[2].substring(split[2].lastIndexOf(File.separator)+1)+") 전송을 완료했습니다.");
 	}
 	
@@ -488,51 +568,8 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
 		if(e.getSource()==exitBtn){	//대화방 나가기 버튼
-			int okChk = JOptionPane.NO_OPTION;
-			if(ta.getText().length()!=0){
-				okChk = JOptionPane.showConfirmDialog(null, "채팅방 대화 내용을 저장하시겠습니까?");
-			}
-			if(okChk==JOptionPane.OK_OPTION){
-				FileWriter fwExit = null;
-				PrintWriter pwExit = null;
-				
-				JFileChooser filechooser = new JFileChooser();
-				FileNameExtensionFilter efilter = new FileNameExtensionFilter("텍스트 파일", "txt");
-				filechooser.setFileFilter(efilter);
-				filechooser.setCurrentDirectory(FileSystemView.getFileSystemView().getHomeDirectory());
-				filechooser.setSelectedFile(new File("chat_room_"+roomName+"_"+new SimpleDateFormat("yyyyMMddhhmmss").format(System.currentTimeMillis())+".txt"));
-				filechooser.setMultiSelectionEnabled(false);
-				int option = filechooser.showSaveDialog(null);
-				
-				if(option==JFileChooser.APPROVE_OPTION){
-					try {
-						fwExit = new FileWriter(filechooser.getSelectedFile(),false);
-						pwExit = new PrintWriter(fwExit);
-						pwExit.print(ta.getText());
-					} catch (IOException e1) {
-						// TODO Auto-generated catch block
-						e1.printStackTrace();
-					}finally {
-						try {
-							if(fwExit!=null){
-								fwExit.close();
-							}
-							if(pwExit!=null){
-								pwExit.close();
-							}
-						} catch (IOException e1) {
-							// TODO Auto-generated catch block
-							e1.printStackTrace();
-						}
-					}
-					chatClientPrac.exitRoom(roomNum);
-					dispose();
-				}
-			}else if(okChk==JOptionPane.NO_OPTION){
-				chatClientPrac.exitRoom(roomNum);
-				dispose();
-			}
-			
+			chatClient.exitRoom(roomNum);
+			dispose();
 		}else if(e.getSource()==btnAll){	//모든 유저 리스트 보기
 			btnRoom.setBorder(BorderFactory.createRaisedBevelBorder());
 			btnAll.setBorder(BorderFactory.createLoweredBevelBorder());
@@ -543,40 +580,46 @@ public class NewRoomFrame extends JFrame implements ActionListener{
 			btnAll.setBorder(BorderFactory.createRaisedBevelBorder());
 			remove(pane_tableAll);
 			add(pane_tableRoom);			
-		}else if(e.getSource()==btnConfig){
-			if(chatClientPrac.getId().equals(tableOwner.getValueAt(0, 0))){
+		}else if(e.getSource()==btnConfig){	//방장이 대화방에서 설정을 클릭한 경우
+			if(chatClient.getId().equals(tableOwner.getValueAt(0, 0))){
 				new RoomConfigOwnerDialog(this);
 			}else{
 				new RoomConfigDialog(this);
 			}
+		}else if(e.getSource() == btnSave){	//대화방 대화내용 저장
+			saveTa();
 		}else{						//대화방 텍스트 필드의 메시지를 전송
-			if(tf.getText().substring(0,2).equals("/w")){
-				if(tf.getText().split(" ").length<3){
-					ta.append("\"/w 사용자아이디 귓속말로보낼내용\" 형식으로 작성해주세요.\n");
-					ta.setCaretPosition(ta.getDocument().getLength());
-				}else{
-					boolean exist = false;
-					for (int i = 0; i < tableAll.getRowCount(); i++) {
-						if(tableAll.getValueAt(i, 0).equals(tf.getText().split(" ")[1])){
-							exist = true;
-							break;
-						}
-					}
-					if(exist){
-						chatClientPrac.chatInRoom(tf.getText(),roomNum);
+			if(tf.getText().length()>2){
+				if(tf.getText().substring(0,2).equals("/w")){
+					if(tf.getText().split(" ").length<3){
+						ta.append("\"/w 사용자아이디 귓속말로보낼내용\" 형식으로 작성해주세요.\n");
+						ta.setCaretPosition(ta.getDocument().getLength());
 					}else{
-						if(tf.getText().split(" ")[1].equals(chatClientPrac.getId())){
-							ta.append("[혼잣말] "+chatClientPrac.getId()+" : "+tf.getText().substring(tf.getText().indexOf(chatClientPrac.getId())+chatClientPrac.getId().length()+1));
-							ta.setCaretPosition(ta.getDocument().getLength());
+						boolean exist = false;
+						for (int i = 0; i < tableAll.getRowCount(); i++) {
+							if(tableAll.getValueAt(i, 0).equals(tf.getText().split(" ")[1])){
+								exist = true;
+								break;
+							}
+						}
+						if(exist){
+							chatClient.chatInRoom(tf.getText(),roomNum);
 						}else{
-							ta.append(tf.getText().split(" ")[1]+"에 해당하는 사용자 아이디가 없습니다.\n");
-							ta.setCaretPosition(ta.getDocument().getLength());
-							
+							if(tf.getText().split(" ")[1].equals(chatClient.getId())){
+								ta.append("[혼잣말] "+chatClient.getId()+" : "+tf.getText().substring(tf.getText().indexOf(chatClient.getId())+chatClient.getId().length()+1)+"\n");
+								ta.setCaretPosition(ta.getDocument().getLength());
+							}else{
+								ta.append(tf.getText().split(" ")[1]+"에 해당하는 사용자 아이디가 없습니다.\n");
+								ta.setCaretPosition(ta.getDocument().getLength());
+								
+							}
 						}
 					}
+				}else{
+					chatClient.chatInRoom("//"+tf.getText(),roomNum);
 				}
 			}else{
-				chatClientPrac.chatInRoom("//"+tf.getText(),roomNum);
+				chatClient.chatInRoom("//"+tf.getText(),roomNum);
 			}
 			tf.setText("");;
 			tf.requestFocus();

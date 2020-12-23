@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ConnectException;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -41,10 +42,12 @@ import javax.swing.JTable;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
+import javax.swing.UIManager;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.filechooser.FileSystemView;
+import javax.swing.plaf.ColorUIResource;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 
@@ -90,6 +93,8 @@ public class ChatClient extends JFrame implements ActionListener{
 	ChatRoomDetailDialog chatRoomDetailDialog;		//대화방 입장 전 대화방에 대한 정보를 확인
 	ChatInviteRoomDetailDialog chatInviteRoomDetailDialog;
 	
+	ChatClientThread chatClientThread;
+	
 	boolean msgAlarm = true;						//대기실 채팅 알림 여부
 	Vector<String> bannedRoomList = new Vector<>();	//강퇴된 대화방 리스트를 저장
 	
@@ -101,9 +106,10 @@ public class ChatClient extends JFrame implements ActionListener{
 		init();
 		setClient();
 	}
-	
+	String idAddress;
 	//서버와의 연결
 	public void setClient(){
+		idAddress = JOptionPane.showInputDialog("접속할 IP주소를 입력하세요.","127.0.0.1");
 		try {
 			while(id.equals("")){	//아이디를 입력하지 않은 경우 거절
 				id = JOptionPane.showInputDialog("아이디");
@@ -117,52 +123,81 @@ public class ChatClient extends JFrame implements ActionListener{
 				}else if(id.indexOf(" ")!=-1){
 					JOptionPane.showMessageDialog(this, "아이디에는 공백을 포함할 수 없습니다.");
 					id = "";
-				}else if(id.indexOf("/")!=-1){
-					JOptionPane.showMessageDialog(this, "아이디에는 /를 포함할 수 없습니다.");
-					id = "";
 				}else if(id.length()>20){
 					JOptionPane.showMessageDialog(this, "아이디는 20자를 초과할 수 없습니다.");
 					id = "";
 				}
 			}
-			socket = new Socket("127.0.0.1",5555);
+			socket = new Socket(idAddress,5555);
 			pw = new PrintWriter(socket.getOutputStream(),true);
 			br = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 			String strExist = null;
 			pw.println(id);
-			while((strExist = br.readLine()).equals("/exist")){
-				JOptionPane.showMessageDialog(this, "이미 존재하는 아이디 입니다.");
-				id = "";
-				while(id.equals("")){
-					id = JOptionPane.showInputDialog("아이디");
-					if(id==null){		//닫기를 누른 경우에는 null
-						int i = JOptionPane.showConfirmDialog(this, "종료하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
-						if(i == JOptionPane.OK_OPTION){
-							System.exit(0);
-						}else{
+			while(true){
+				if((strExist = br.readLine()).equals("/exist")){
+					JOptionPane.showMessageDialog(this, "이미 존재하는 아이디 입니다.");
+					id = "";
+					while(id.equals("")){
+						id = JOptionPane.showInputDialog("아이디");
+						if(id==null){		//닫기를 누른 경우에는 null
+							int i = JOptionPane.showConfirmDialog(this, "종료하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
+							if(i == JOptionPane.OK_OPTION){
+								System.exit(0);
+							}else{
+								id = "";
+							}
+						}else if(id.indexOf(" ")!=-1){
+							JOptionPane.showMessageDialog(this, "아이디에는 공백을 포함할 수 없습니다.");
+							id = "";
+						}else if(id.indexOf("/")!=-1){
+							JOptionPane.showMessageDialog(this, "아이디에는 /를 포함할 수 없습니다.");
+							id = "";
+						}else if(id.length()>20){
+							JOptionPane.showMessageDialog(this, "아이디는 20자를 초과할 수 없습니다.");
 							id = "";
 						}
-					}else if(id.indexOf(" ")!=-1){
-						JOptionPane.showMessageDialog(this, "아이디에는 공백을 포함할 수 없습니다.");
-						id = "";
-					}else if(id.indexOf("/")!=-1){
-						JOptionPane.showMessageDialog(this, "아이디에는 /를 포함할 수 없습니다.");
-						id = "";
-					}else if(id.length()>20){
-						JOptionPane.showMessageDialog(this, "아이디는 20자를 초과할 수 없습니다.");
-						id = "";
 					}
+					pw.println(id);
+					
+				}else if(strExist.equals("/prohibit")){
+					JOptionPane.showMessageDialog(this, "비속어를 포함한 아이디는 사용할 수 없습니다.");
+					id = "";
+					while(id.equals("")){
+						id = JOptionPane.showInputDialog("아이디");
+						if(id==null){		//닫기를 누른 경우에는 null
+							int i = JOptionPane.showConfirmDialog(this, "종료하시겠습니까?", "", JOptionPane.OK_CANCEL_OPTION);
+							if(i == JOptionPane.OK_OPTION){
+								System.exit(0);
+							}else{
+								id = "";
+							}
+						}else if(id.indexOf(" ")!=-1){
+							JOptionPane.showMessageDialog(this, "아이디에는 공백을 포함할 수 없습니다.");
+							id = "";
+						}else if(id.indexOf("/")!=-1){
+							JOptionPane.showMessageDialog(this, "아이디에는 /를 포함할 수 없습니다.");
+							id = "";
+						}else if(id.length()>20){
+							JOptionPane.showMessageDialog(this, "아이디는 20자를 초과할 수 없습니다.");
+							id = "";
+						}
+					}
+					pw.println(id);
+				}else{
+					break;
 				}
-				pw.println(id);
 			}
 			
 			setTitle(id+"님의 채팅창");
-			new ChatClientThread(id, socket, ta, modelAll, this ,pw ,br).start();
+			chatClientThread = new ChatClientThread(id, socket, ta, modelAll, this ,pw ,br);
+			chatClientThread.start();
 		} catch (ConnectException e) {
 			JOptionPane.showMessageDialog(this, "서버가 작동하지 않습니다.");
 			System.exit(0);
+		}	catch (SocketException e) {
+			JOptionPane.showMessageDialog(this, "잘못된 IP주소 입니다.");
+			System.exit(0);
 		} catch (UnknownHostException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
@@ -175,12 +210,17 @@ public class ChatClient extends JFrame implements ActionListener{
 		
 		roomInfoList = new HashMap<>();
 		
+		UIManager UI=new UIManager();
+		 UI.put("OptionPane.background",new ColorUIResource(255,255,255));
+		 UI.put("Panel.background",new ColorUIResource(255,255,255));
+		 
 		pnl = new JPanel();
 		pnl.setLayout(null);
 		
 		tf = new JTextField();
 		tf.addActionListener(this);
 		ta =  new JTextArea();
+		ta.setEditable(false);
 		JScrollPane pane = new JScrollPane(ta);
 		pnl.add(pane);
 		pnl.add(tf);
@@ -318,8 +358,8 @@ public class ChatClient extends JFrame implements ActionListener{
 						popupMenu.add(item2);
 					}else{
 						popupMenu.remove(item2);
-						popupMenu.add(item1);
 						popupMenu.add(item3);
+						popupMenu.add(item1);
 					}
 				}else{
 					popupMenu.setVisible(false);
@@ -365,7 +405,27 @@ public class ChatClient extends JFrame implements ActionListener{
 		//나중에 작업할 예정
 		addWindowListener(new WindowAdapter() {
 			@Override
-			public void windowClosing(WindowEvent e) {	
+			public void windowClosing(WindowEvent e) {
+				pw.println("/close");
+				for(Map.Entry<String, NewRoomFrame> entry: roomInfoList.entrySet()){
+					if(entry.getValue().getModelOwner().getValueAt(0, 0).equals(id)){
+						pw.println("/newOwner "+entry.getValue().getModelRoom().getValueAt(0, 0)+" /room "+entry.getKey());
+					}
+				}
+					try {
+						if(socket!=null){
+							socket.close();
+						}
+						if(br!=null){
+							br.close();
+						}
+						if(pw!=null){
+							pw.close();
+						}
+					} catch (IOException e2) {
+						// TODO Auto-generated catch block
+						e2.printStackTrace();
+					}
 				System.exit(0);
 			}
 		});
@@ -539,7 +599,7 @@ public class ChatClient extends JFrame implements ActionListener{
 						pw.println(tf.getText()+" /room");
 					}else{
 						if(tf.getText().split(" ")[1].equals(id)){
-							ta.append("[혼잣말] "+id+" : "+tf.getText().substring(tf.getText().indexOf(id)+id.length()+1));
+							ta.append("[혼잣말] "+id+" : "+tf.getText().substring(tf.getText().indexOf(id)+id.length()+1)+"\n");
 							ta.setCaretPosition(ta.getDocument().getLength());
 						}else{
 							ta.append(tf.getText().split(" ")[1]+"에 해당하는 사용자 아이디가 없습니다.\n");
@@ -554,6 +614,11 @@ public class ChatClient extends JFrame implements ActionListener{
 			tf.setText("");
 			tf.requestFocus();
 		}
+	}
+	public void pwCreateNewRoom(){
+		newRoomFrame.dispose();
+		JOptionPane.showMessageDialog(this, "대화방 이름은 비속어를 포함할 수 없습니다.");
+		new ChatNewRoomDialog(this);
 	}
 	//ChatNewRoomDialog 에서 btnOk 클릭시 호출
 	public void createRoom(String name){
@@ -586,12 +651,11 @@ public class ChatClient extends JFrame implements ActionListener{
 		modelRoomDataChanged();
 		pw.println("/enterRoomEnd "+roomNum);	//방이 제대로 생성되고 난 후 서버에 생성완료를 전달하면 서버에서 해당 방에 참여자 정보를 제공해줌
 	}
-	public void chatInRoom(String msg,String roomNum){
+	public void chatInRoom(String msg,String roomNum){	//대화방에서 메시지를 보낼 경우
 		pw.println(msg+" /room "+roomNum);
 	}
-	public void exitRoom(String roomNum){
+	public void exitRoom(String roomNum){		//대화방에서 나갈때
 		pw.println("/exitRoom "+roomNum);
-		
 	}
 	
 	public JTable getTableRoom() {
@@ -609,6 +673,11 @@ public class ChatClient extends JFrame implements ActionListener{
 	public String getId() {
 		return id;
 	}
+	
+	public void setId(String id) {
+		this.id = id;
+	}
+
 	public TrayIcon getTrayIcon() {
 		return trayIcon;
 	}
@@ -665,13 +734,9 @@ public class ChatClient extends JFrame implements ActionListener{
 	public void sendMsgRejectInvite(String roomNum, String inviteFrom){	//초대를 거절한 경우
 		pw.println("/rejectInvite "+inviteFrom+" /room "+roomNum);
 	}
+	//대기실 설정에서 아이디 변경
 	public void chgId(String newId){
-		for(Map.Entry<String, NewRoomFrame> entry : roomInfoList.entrySet()){
-			entry.getValue().setTitle(entry.getValue().getTitle().substring(0,entry.getValue().getTitle().lastIndexOf(id+" ) - "))+newId+" ) - "+entry.getKey());
-		}
 		pw.println("/chgId "+id+" "+newId+" /room");
-		id = newId;
-		setTitle(id+"님의 채팅창");
 	}
 	public void setMsgAlarm(boolean chk){
 		msgAlarm = chk;
@@ -685,20 +750,34 @@ public class ChatClient extends JFrame implements ActionListener{
 	public void removeBannedRoomList(String roomNum){
 		bannedRoomList.remove(roomNum);
 	}
-	public void receiveFileChk(String[] split){
+	public void receiveFileChk(String[] split){	//파일을 전송받을 것인지 확인
 		roomInfoList.get(split[split.length-1]).receiveFileChk(split);
 	}
-	public void receiveFile(String[] split,String saveFileRoot){
-		String l = "";
-		for (int i = 1; i < split.length; i++) {
-			l += split[i]+" ";
-		}
+	public void receiveFile(String[] split,String saveFileRoot){	//파일 받는 것이 확정
 		pw.println("/receiveFile "+split[1]+" "+saveFileRoot+" "+split[3]+" "+split[2]+" "+split[4]+" "+split[5]);
 	}
-	public void completeSend(String[] split){
+	public void completeSend(String[] split){	//전송이 완료되었음을 알림
 		roomInfoList.get(split[split.length-1]).completeSend(split);
 	}
-	public void completeReceive(String[] split){
+	public void completeReceive(String[] split){	//전송이 완료되었음을 알림
 		roomInfoList.get(split[split.length-1]).completeReceive(split);
+	}
+	public void pwchgId(){
+		JOptionPane.showMessageDialog(this, "비속어를 포함한 아이디를 사용하실 수 없습니다.");
+	}
+	public void chgIdOk(){
+		JOptionPane.showMessageDialog(this, "아이디가 변경되었습니다.");
+	}
+	public void pwChgRoomName(String roomNum){
+		roomInfoList.get(roomNum).pwChgRoomName();
+	}
+	public void chgRoomNameOK(String roomNum){
+		roomInfoList.get(roomNum).chgRoomNameOK();
+	}
+	public void cancelSecretRoomOk(String roomNum){
+		roomInfoList.get(roomNum).cancelSecretRoomOk();
+	}
+	public void chgRoomPassWordOk(String roomNum){
+		roomInfoList.get(roomNum).chgRoomPassWordOk();
 	}
 }

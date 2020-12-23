@@ -1,4 +1,5 @@
 package client;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Image;
 import java.awt.Toolkit;
@@ -34,13 +35,14 @@ public class ChatNewRoomDialog extends JDialog implements ActionListener{
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		
 		setLayout(null);
-		JLabel lblTitle = new JLabel("<< 대화방 생성 >>");
+		JLabel lblTitle = new JLabel("대화방 생성");
 		lblTitle.setFont(new Font(null, Font.BOLD, 25));
 		add(lblTitle);
 		JLabel lblname = new JLabel("대화방 이름");
 		tfname = new JTextField();
 		tfname.addKeyListener(new KeyAdapter() {
-			public void keyPressed(java.awt.event.KeyEvent e) {	//대화방 이름은 30자 제한
+			@Override
+			public void keyReleased(java.awt.event.KeyEvent e) {	//대화방 이름은 30자 제한
 				if(tfname.getText().length()>30){
 					tfname.setText(tfname.getText().substring(0, 30));
 				}
@@ -85,13 +87,18 @@ public class ChatNewRoomDialog extends JDialog implements ActionListener{
 		setIconImage(img);
 		
 		setSize(380,200);
-		lblTitle.setBounds(100,0,150,40);
+		lblTitle.setBounds(120,0,200,40);
 		lblname.setBounds(30,40,80,30);
 		tfname.setBounds(150, 40, 200, 30);
 		secretChkBox.setBounds(10, 80, 130, 30);
 		pwField.setBounds(150,80,200,30);
 		btnOk.setBounds(80, 120, 100, 30);
 		btnCancel.setBounds(180, 120, 100, 30);
+		getContentPane().setBackground(Color.WHITE);
+		btnCancel.setBackground(Color.WHITE);
+		btnOk.setBackground(Color.WHITE);
+		secretChkBox.setBackground(Color.WHITE);
+		
 		add(secretChkBox);
 		add(lblname);
 		add(tfname);

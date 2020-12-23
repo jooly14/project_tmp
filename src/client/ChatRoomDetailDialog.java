@@ -1,4 +1,6 @@
 package client;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -41,8 +43,7 @@ public class ChatRoomDetailDialog extends JDialog implements ActionListener{
 		
 		lblNumAndName = new JLabel("["+roomNum+"] "+roomName);
 		lblOwner = new JLabel("방장 : " + split[3]);
-		lblNumAndName.setBounds(0, 0, 380, 50);
-		lblOwner.setBounds(0, 50, 380, 50);
+		
 		
 		//값 수정 안되도록
 		modelParticipants = new DefaultTableModel(contentParticipants, headerParticipants){
@@ -52,7 +53,7 @@ public class ChatRoomDetailDialog extends JDialog implements ActionListener{
 		};
 		tableParticipants = new JTable(modelParticipants);
 		JScrollPane pane_tableParticipants = new JScrollPane(tableParticipants);
-		pane_tableParticipants.setBounds(0, 100, 380, 200);
+		
 		for (int i = 4; i < split.length; i++) {
 			modelParticipants.addRow(new String[]{split[i]});
 		}
@@ -67,7 +68,20 @@ public class ChatRoomDetailDialog extends JDialog implements ActionListener{
 		btnOk.addActionListener(this);
 		btnCancel.addActionListener(this);
 		
+		JLabel lblTitle = new JLabel("대화방 정보");
+		lblTitle.setFont(new Font(null,Font.BOLD,30));
+		lblTitle.setBounds(0,0,280,50);
+		lblNumAndName.setBounds(0, 50, 280, 30);
+		lblOwner.setBounds(0, 80, 280, 30);
+		pane_tableParticipants.setBounds(0, 110, 280, 150);
 		
+		tableParticipants.getTableHeader().setBackground(Color.white);
+		pane_tableParticipants.getViewport().setBackground(Color.white);
+		btnOk.setBackground(Color.WHITE);
+		btnCancel.setBackground(Color.white);
+		
+		
+		add(lblTitle);
 		add(btnOk);
 		add(btnCancel);
 		add(lblNumAndName);
@@ -83,24 +97,24 @@ public class ChatRoomDetailDialog extends JDialog implements ActionListener{
 		setVisible(true);
 	}
 	public void secretRoom(String[] split){
-		setSize(400,500);
+		setSize(300,370);
 		
 		pwField = new JPasswordField();
 		lblPassword = new JLabel("비밀번호 : ");
-		lblPassword.setBounds(0, 300, 80, 30);
-		pwField.setBounds(100, 300, 200, 30);
+		lblPassword.setBounds(0, 260, 80, 30);
+		pwField.setBounds(90, 260, 190, 30);
 		
-		btnOk.setBounds(80, 330, 100, 30);
-		btnCancel.setBounds(180, 330, 100, 30);
+		btnOk.setBounds(80, 290, 100, 30);
+		btnCancel.setBounds(180, 290, 100, 30);
 		
 		add(pwField);
 		add(lblPassword);
 		pwField.requestFocus();
 	}
 	public void notSecretRoom(String[] split){
-		setSize(400,450);
-		btnOk.setBounds(80, 300, 100, 30);
-		btnCancel.setBounds(180, 300, 100, 30);
+		setSize(300,370);
+		btnOk.setBounds(80, 290, 100, 30);
+		btnCancel.setBounds(180, 290, 100, 30);
 		
 	}
 	public void correctPassword(){	//비밀 대화방의 비밀번호가 일치하는 경우

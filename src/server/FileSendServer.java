@@ -4,7 +4,8 @@ import java.io.BufferedOutputStream;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
-
+//파일 전송할 서버
+//포트번호를 같게 하면 전송하는 사람과 전송받는 사람 구분이 어려워서 따로 생성
 public class FileSendServer extends Thread{
 	ServerSocket serverSocket;
 	ServerSocket serverSocket2;
@@ -39,7 +40,7 @@ public class FileSendServer extends Thread{
 			int data;
 			bis = new BufferedInputStream(clientSocket.getInputStream());
 			bos = new BufferedOutputStream(clientSocket2.getOutputStream());
-			while ((data = bis.read())!=-1) {
+			while ((data = bis.read())!=-1) {	//clientSocket의 bis에서 읽어와서 clientSocket2의 bos에 씀
 				bos.write(data);
 			}
 		} catch (IOException e) {

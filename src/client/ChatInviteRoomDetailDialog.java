@@ -1,4 +1,6 @@
 package client;
+import java.awt.Color;
+import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -27,7 +29,7 @@ public class ChatInviteRoomDetailDialog extends JDialog implements ActionListene
 	String roomNum;
 	String inviteFrom;
 	public ChatInviteRoomDetailDialog(ChatClient chatClient,String[] split,String roomName) {
-		super(chatClient);
+		super(chatClient,false);
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setLayout(null);
 		this.chatClient = chatClient;
@@ -37,8 +39,7 @@ public class ChatInviteRoomDetailDialog extends JDialog implements ActionListene
 		inviteFrom = split[2];
 		lblNumAndName = new JLabel("["+roomNum+"] "+roomName);
 		lblOwner = new JLabel("방장 : " + split[3]);
-		lblNumAndName.setBounds(0, 0, 380, 50);
-		lblOwner.setBounds(0, 50, 380, 50);
+		
 		
 		//값이 수정되지 않도록
 		modelParticipants = new DefaultTableModel(contentParticipants, headerParticipants){
@@ -48,7 +49,7 @@ public class ChatInviteRoomDetailDialog extends JDialog implements ActionListene
 		};
 		tableParticipants = new JTable(modelParticipants);
 		JScrollPane pane_tableParticipants = new JScrollPane(tableParticipants);
-		pane_tableParticipants.setBounds(0, 100, 380, 200);
+		
 		for (int i = 4; i < split.length; i++) {
 			modelParticipants.addRow(new String[]{split[i]});
 		}
@@ -64,12 +65,26 @@ public class ChatInviteRoomDetailDialog extends JDialog implements ActionListene
 		btnCancel.addActionListener(this);
 		
 		JLabel lblInviteFrom = new JLabel(inviteFrom+"님께서 대화방에 초대하셨습니다");
-		lblInviteFrom.setBounds(0, 300, 380, 30);
 		
-		setSize(400,500);
-		btnOk.setBounds(80, 330, 100, 30);
-		btnCancel.setBounds(180, 330, 100, 30);
 		
+		setSize(300,370);
+		JLabel lblTitle = new JLabel("대화방 초대");
+		lblTitle.setFont(new Font(null,Font.BOLD,30));
+		lblTitle.setBounds(0,0,280,50);
+		lblNumAndName.setBounds(0, 50, 280, 30);
+		lblOwner.setBounds(0, 80, 280, 30);
+		pane_tableParticipants.setBounds(0, 110, 280, 150);
+		lblInviteFrom.setBounds(0, 260, 380, 30);
+		lblInviteFrom.setForeground(Color.GREEN);
+		btnOk.setBounds(80, 290, 100, 30);
+		btnCancel.setBounds(180, 290, 100, 30);
+		getContentPane().setBackground(Color.white);
+		btnOk.setBackground(Color.white);
+		btnCancel.setBackground(Color.white);
+		pane_tableParticipants.getViewport().setBackground(Color.WHITE);
+		tableParticipants.getTableHeader().setBackground(Color.WHITE);
+		
+		add(lblTitle);
 		add(lblInviteFrom);
 		add(btnOk);
 		add(btnCancel);

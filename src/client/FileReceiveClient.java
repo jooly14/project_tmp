@@ -6,7 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.UnknownHostException;
-
+//파일을 받기 위해서 서버랑 연결
 public class FileReceiveClient extends Thread{
 	ChatClient chatClientPrac;
 	String[] split;
@@ -34,8 +34,8 @@ public class FileReceiveClient extends Thread{
 //			if(new File(split[2]).exists()){
 //				split[2] = split[2].split("[.]")[0]+ new SimpleDateFormat("yyyyMMddhhmmss").format(System.currentTimeMillis())+"."+split[2].split("[.]")[1];
 //			}
-			bis = new BufferedInputStream(socket.getInputStream());
-			fos = new FileOutputStream(split[2],false);
+			bis = new BufferedInputStream(socket.getInputStream());	//서버에서 받아와서
+			fos = new FileOutputStream(split[2],false);				//내 컴퓨터에 씀
 			bos = new BufferedOutputStream(fos);
 			
 			int data;
@@ -64,7 +64,7 @@ public class FileReceiveClient extends Thread{
 				e.printStackTrace();
 			}
 		}
-		chatClientPrac.completeReceive(split.clone());
+		chatClientPrac.completeReceive(split.clone());	//파일 전송이 완료되었음을 알림
 
 	}
 }

@@ -7,6 +7,8 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -20,10 +22,12 @@ import java.io.PrintWriter;
 import java.net.BindException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.sql.Date;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Vector;
 
@@ -65,6 +69,9 @@ public class ChatServer extends JFrame implements ActionListener{
 	HashMap<String, PrintWriter> map;	//전체 사용자의 아이디와 printWriter를 관리
 	
 	int roomNum;	//유저가 방을 생성할 때 서버에서 방 번호를 생성해주기 위해서 필요	//방마다 고유한 방번호를 가질 수 있도록 만듦	// 방번호 + 오늘날짜 가 방번호
+	
+	HashSet<String> prohibitWordList = new HashSet<>();
+	ChatServerThread chatServerThread;
 	//초기화
 	public ChatServer() {
 		init();	
@@ -78,14 +85,29 @@ public class ChatServer extends JFrame implements ActionListener{
 			ta.append("연결을 기다리는 중입니다.\n");
 			while (true) {																//여러명의 유저와 연결 가능하도록 함
 				clientSocket = serverSocket.accept();
-				new ChatServerThread(this, map, clientSocket, ta, modelAll).start();	//스레드 시작
+				chatServerThread = new ChatServerThread(this, map, clientSocket, ta, modelAll);	//스레드 시작
+				chatServerThread.start();
 			}
-		} catch (BindException e) {
+		}catch (BindException e) {
 			JOptionPane.showMessageDialog(null, "서버가 이미 실행 중입니다.");
 			System.exit(0);
+		}catch (SocketException e) {
+			// TODO: handle exception
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}finally{
+			try {
+				if(serverSocket!=null){
+					serverSocket.close();
+				}
+				if(clientSocket!=null){
+					clientSocket.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
 	
@@ -150,9 +172,24 @@ public class ChatServer extends JFrame implements ActionListener{
 		});
 		
 		
+		readPWordFileFirst();
 		
-		
-		
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				try {
+					if(serverSocket!=null){
+						serverSocket.close();
+					}
+					if(clientSocket!=null){
+						clientSocket.close();
+					}
+				} catch (IOException e2) {
+					// TODO Auto-generated catch block
+					e2.printStackTrace();
+				}
+			}
+		});
 		
 		Image img = Toolkit.getDefaultToolkit().getImage("big6.png");
 		img = img.getScaledInstance(15, 15, Image.SCALE_DEFAULT);
@@ -173,6 +210,7 @@ public class ChatServer extends JFrame implements ActionListener{
 			ta.append("금지어 목록 : /pWord\n");
 			ta.append("금지어 추가 : /pWordAdd 금지단어\n");
 			ta.append("금지어 삭제 : /pWordRemove 금지단어\n\n");
+			ta.setCaretPosition(ta.getDocument().getLength());
 		}else if(split[0].equals("/pWord")){	//금지어 파일을 모두 읽어옴
 			readPWordFile();
 		}else if(split[0].equals("/pWordAdd")){	// "/pWordAdd 금지단어"형식으로 쓰면 금지단어를 금지어데이터에 저장
@@ -212,7 +250,8 @@ public class ChatServer extends JFrame implements ActionListener{
 				}
 			}
 		}
-		tf.selectAll();
+		tf.setText("");
+		tf.requestFocus();
 	} 
 	//금지어 데이터에서 해당 금지어를 제거
 	public void removePwordFile(String removeWord){
@@ -267,6 +306,7 @@ public class ChatServer extends JFrame implements ActionListener{
 			ta.append(removeWord +" 는 존재하지 않는 금지어입니다.\n");
 			ta.setCaretPosition(ta.getDocument().getLength());
 		}else{
+			prohibitWordList.remove(removeWord);
 			ta.append(removeWord+" 가 금지어에서 삭제되었습니다\n");
 			ta.setCaretPosition(ta.getDocument().getLength());
 		}
@@ -332,6 +372,7 @@ public class ChatServer extends JFrame implements ActionListener{
 					e.printStackTrace();
 				}	
 			}
+			prohibitWordList.add(addWord);
 			ta.append(addWord+" 가 금지어에 추가되었습니다.\n");
 			ta.setCaretPosition(ta.getDocument().getLength());
 		}
@@ -370,6 +411,37 @@ public class ChatServer extends JFrame implements ActionListener{
 				}
 		}
 	}
+	//금지어 데이터에서 금지어목록을 모두 읽어옴
+	public void readPWordFileFirst(){
+		FileReader fr = null;
+		BufferedReader br = null;
+		try {
+			fr = new FileReader("ProhibitedWord.txt");
+			br = new BufferedReader(fr);
+			String l;
+			while ((l = br.readLine())!=null) {
+				prohibitWordList.add(l);
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}finally {
+			try {
+				if(fr!=null){
+					fr.close();
+				}
+				if(br!=null){
+					br.close();
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+	}
 	//chatserverthread 에서 사용
 	public HashMap<String, Room> getRoomMap(){
 		return roomMap;
@@ -396,6 +468,15 @@ public class ChatServer extends JFrame implements ActionListener{
 	public int getRoomNum() {
 		return roomNum++;
 	}
+	public JTable getTableAll() {
+		return tableAll;
+	}
+	public HashSet<String> getProhibitWordList() {
+		return prohibitWordList;
+	}
+	
+	
+	
 }
 
 
