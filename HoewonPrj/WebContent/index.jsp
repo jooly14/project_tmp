@@ -144,26 +144,12 @@
 	              <h1>공지사항</h1><span><i class="fas fa-plus"></i></span>
 	          </div>
 	          <table>
-	              <tr>
-	                  <td>도서관에서 겨울나기 '집콕 놀이 체험 행사' 안내</td>
-	                  <td>2021.01.13</td>
-	              </tr>
-	              <tr>
-	                  <td>1월 '아이 좋아'도서관 운영 안내(1.9)/비대면</td>
-	                  <td>2021.01.05</td>
-	              </tr>
-	              <tr>
-	                  <td>신정(1/1) 휴관 안내</td>
-	                  <td>2020.12.29</td>
-	              </tr>
-	              <tr>
-	                  <td>마산회원도서관 성탄절(12/25) 휴관 안내</td>
-	                  <td>2020.12.22</td>
-	              </tr>
-	              <tr>
-	                  <td>12월 문화가 있는 날 안내</td>
-	                  <td>2020.12.21</td>
-	              </tr>
+				<c:forEach var="i" begin="0" end="4">
+			            <tr>
+			                <td>${titles.get(i)}</td>
+			                <td>${regdates.get(i)}</td>
+			            </tr>
+           		</c:forEach>
 	          </table>
 	      </div>
 	      <div class="p3">
